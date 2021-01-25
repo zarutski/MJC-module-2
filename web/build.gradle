@@ -1,0 +1,7 @@
+dependencies {
+    compile group: 'org.springframework', name: 'spring-webmvc', version: '5.3.3'
+    compile group: 'mysql', name: 'mysql-connector-java', version: '8.0.22'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.12.1'
+    compile project(':domain')
+    compile project(':service')
+}
