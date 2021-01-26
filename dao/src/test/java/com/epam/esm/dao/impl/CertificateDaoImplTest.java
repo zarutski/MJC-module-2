@@ -20,6 +20,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabase;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -33,6 +34,7 @@ import java.util.stream.Stream;
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = DBConfig.class)
 @WebAppConfiguration
+@ActiveProfiles("test")
 class CertificateDaoImplTest {
 
     public static final String DB_REFRESH_SCRIPT = "data.sql";

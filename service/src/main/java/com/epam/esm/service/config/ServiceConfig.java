@@ -7,11 +7,13 @@ import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import javax.sql.DataSource;
 
 @Configuration
 @Import({DBConfig.class})
+@EnableWebMvc
 @EnableTransactionManagement
 public class ServiceConfig {
 
