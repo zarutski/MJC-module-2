@@ -72,7 +72,7 @@ public class TagDaoImpl implements TagDao {
 
     @Override
     public Optional<Tag> readById(Long id) {
-        return jdbcTemplate.query(SELECT_TAG_BY_ID, tagMapper, id).stream().findFirst(); // TODO
+        return jdbcTemplate.query(SELECT_TAG_BY_ID, tagMapper, id).stream().findFirst();
     }
 
     @Override

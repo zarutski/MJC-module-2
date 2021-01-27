@@ -88,7 +88,7 @@ public class CertificateDaoImpl implements CertificateDao {
     public Optional<Certificate> readById(Long id) {
         return jdbcTemplate.query(SELECT_CERTIFICATE_BY_ID, certificateMapper, id)
                 .stream()
-                .findFirst(); // TODO
+                .findFirst();
     }
 
     @Override
