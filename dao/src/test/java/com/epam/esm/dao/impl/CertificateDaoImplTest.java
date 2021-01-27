@@ -14,6 +14,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabase;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
@@ -67,6 +68,8 @@ class CertificateDaoImplTest {
     private EmbeddedDatabase embeddedDatabase;
     @Autowired
     private TagMapper tagMapper;
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     @AfterEach
     public void tearDown() {
@@ -101,7 +104,7 @@ class CertificateDaoImplTest {
 
         Tag tag = new Tag();
         tag.setName(FIRST_NAME);
-        TagDao tagDao = new TagDaoImpl(embeddedDatabase, tagMapper);
+        TagDao tagDao = new TagDaoImpl(jdbcTemplate, tagMapper);
         Long tagID = tagDao.create(tag);
 
         Integer actual = certificateDao.createCertificateHasTag(certificateID, tagID);

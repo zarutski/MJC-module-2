@@ -10,7 +10,6 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 
-import javax.sql.DataSource;
 import java.sql.PreparedStatement;
 import java.util.List;
 import java.util.Objects;
@@ -40,8 +39,8 @@ public class CertificateDaoImpl implements CertificateDao {
     private final JdbcTemplate jdbcTemplate;
     private final CertificateMapper certificateMapper;
 
-    public CertificateDaoImpl(CertificateMapper certificateMapper, DataSource dataSource) {
-        this.jdbcTemplate = new JdbcTemplate(dataSource);
+    public CertificateDaoImpl(JdbcTemplate jdbcTemplate, CertificateMapper certificateMapper) {
+        this.jdbcTemplate = jdbcTemplate;
         this.certificateMapper = certificateMapper;
     }
 

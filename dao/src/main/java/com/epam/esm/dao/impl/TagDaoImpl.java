@@ -11,7 +11,6 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 
-import javax.sql.DataSource;
 import java.sql.PreparedStatement;
 import java.util.List;
 import java.util.Optional;
@@ -34,8 +33,8 @@ public class TagDaoImpl implements TagDao {
     private final JdbcTemplate jdbcTemplate;
     private final TagMapper tagMapper;
 
-    public TagDaoImpl(DataSource dataSource, TagMapper tagMapper) {
-        this.jdbcTemplate = new JdbcTemplate(dataSource);
+    public TagDaoImpl(JdbcTemplate jdbcTemplate, TagMapper tagMapper) {
+        this.jdbcTemplate = jdbcTemplate;
         this.tagMapper = tagMapper;
     }
 
