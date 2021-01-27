@@ -12,30 +12,24 @@ import java.util.stream.Collectors;
 public class TagDTOMapperImpl implements TagDTOMapper {
 
     @Override
-    public Tag toTagEntity(TagDTO tagDTO) {
+    public Tag toEntity(TagDTO tagDTO) {
         Tag tag = new Tag();
         tag.setId(tagDTO.getId());
         tag.setName(tagDTO.getName());
-
         return tag;
     }
 
     @Override
-    public TagDTO toTagDTO(Tag tag) {
+    public TagDTO toDTO(Tag tag) {
         TagDTO tagDTO = new TagDTO();
         tagDTO.setId(tag.getId());
         tagDTO.setName(tag.getName());
-
         return tagDTO;
     }
 
     @Override
-    public List<TagDTO> toTagDTOList(List<Tag> tag) {
-        return tag.stream().map(this::toTagDTO).collect(Collectors.toList());
+    public List<TagDTO> toDTOList(List<Tag> tag) {
+        return tag.stream().map(this::toDTO).collect(Collectors.toList());
     }
 
-    @Override
-    public List<Tag> toTagEntityList(List<TagDTO> tag) {
-        return tag.stream().map(this::toTagEntity).collect(Collectors.toList());
-    }
 }

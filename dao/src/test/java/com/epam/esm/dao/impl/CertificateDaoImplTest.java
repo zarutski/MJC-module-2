@@ -2,28 +2,23 @@ package com.epam.esm.dao.impl;
 
 import com.epam.esm.dao.CertificateDao;
 import com.epam.esm.dao.TagDao;
-import com.epam.esm.dao.config.DBConfig;
+import com.epam.esm.dao.config.TestConfig;
 import com.epam.esm.dao.exception.WrongInsertDataException;
-import com.epam.esm.dao.mapper.CertificateMapper;
 import com.epam.esm.dao.mapper.TagMapper;
 import com.epam.esm.domain.entity.Certificate;
 import com.epam.esm.domain.entity.Tag;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabase;
-import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
-import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.context.web.WebAppConfiguration;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -32,12 +27,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = DBConfig.class)
-@WebAppConfiguration
+@ContextConfiguration(classes = TestConfig.class)
 @ActiveProfiles("test")
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class CertificateDaoImplTest {
-
-    public static final String DB_REFRESH_SCRIPT = "data.sql";
 
     private static final long FIRST_ID = 1L;
     private static final String FIRST_NAME = "first name";
@@ -68,24 +61,12 @@ class CertificateDaoImplTest {
     private static final String SEARCH_CERTIFICATE_QUERY_PART = "WHERE c.name LIKE concat('%', ?, '%') " +
             "AND c.description LIKE concat('%', ?, '%') order by c.name ASC";
 
+    @Autowired
     private CertificateDao certificateDao;
-    private JdbcTemplate jdbcTemplate;
+    @Autowired
     private EmbeddedDatabase embeddedDatabase;
-
     @Autowired
     private TagMapper tagMapper;
-    @Autowired
-    private CertificateMapper certificateMapper;
-
-    @BeforeEach
-    void setup() {
-        embeddedDatabase = new EmbeddedDatabaseBuilder()
-                .addScript(DB_REFRESH_SCRIPT)
-                .setType(EmbeddedDatabaseType.H2)
-                .build();
-        jdbcTemplate = new JdbcTemplate(embeddedDatabase);
-        certificateDao = new CertificateDaoImpl(jdbcTemplate, certificateMapper);
-    }
 
     @AfterEach
     public void tearDown() {
@@ -99,7 +80,7 @@ class CertificateDaoImplTest {
         certificate.setName(FIRST_NAME);
         certificate.setDescription(FIRST_DESCRIPTION);
 
-        Integer integer = certificateDao.updateCertificate(certificate);
+        Integer integer = certificateDao.update(certificate);
         assertEquals(RECORD_AFFECTED_ONE, integer);
     }
 
@@ -109,19 +90,19 @@ class CertificateDaoImplTest {
         first.setId(THIRD_ID);
         first.setDescription(FIRST_DESCRIPTION);
 
-        Integer integer = certificateDao.updateCertificate(first);
+        Integer integer = certificateDao.update(first);
         assertEquals(RECORD_AFFECTED_NONE, integer);
     }
 
     @Test
     void createCertificateHasTag() {
         Certificate certificate = createCertificateEntity();
-        Long certificateID = certificateDao.createFromEntity(certificate);
+        Long certificateID = certificateDao.create(certificate);
 
         Tag tag = new Tag();
         tag.setName(FIRST_NAME);
-        TagDao tagDao = new TagDaoImpl(jdbcTemplate, tagMapper);
-        Long tagID = tagDao.createFromEntity(tag);
+        TagDao tagDao = new TagDaoImpl(embeddedDatabase, tagMapper);
+        Long tagID = tagDao.create(tag);
 
         Integer actual = certificateDao.createCertificateHasTag(certificateID, tagID);
         assertEquals(RECORD_AFFECTED_ONE, actual);
@@ -147,7 +128,7 @@ class CertificateDaoImplTest {
     @Test
     void createFromEntityPositive() {
         Certificate certificate = createCertificateEntity();
-        assertEquals(THIRD_ID, certificateDao.createFromEntity(certificate));
+        assertEquals(THIRD_ID, certificateDao.create(certificate));
     }
 
     @Test
@@ -155,15 +136,13 @@ class CertificateDaoImplTest {
         Certificate certificate = createCertificateEntity();
         certificate.setPrice(null);
 
-        assertThrows(WrongInsertDataException.class, () -> certificateDao.createFromEntity(certificate));
+        assertThrows(WrongInsertDataException.class, () -> certificateDao.create(certificate));
     }
 
     @Test
     void readByIdPositive() {
         Certificate expected = createDBIdentityCertificate(FIRST_ID, FIRST_NAME,
                 FIRST_DESCRIPTION, FIRST_PRICE, FIRST_DURATION, FIRST_MINUTE);
-        ;
-
         Optional<Certificate> certificate = certificateDao.readById(FIRST_ID);
         assertEquals(expected, certificate.get());
     }
@@ -186,7 +165,6 @@ class CertificateDaoImplTest {
         expectedCertificates.add(entitySecond);
 
         List<Certificate> actualGiftCertificates = certificateDao.readAll();
-
         assertEquals(expectedCertificates, actualGiftCertificates);
     }
 

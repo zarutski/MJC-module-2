@@ -1,11 +1,11 @@
 package com.epam.esm.web.exception;
 
-public class ErrorHandler {
+public class ErrorResponse {
 
     private final String errorMessage;
     private final int errorCode;
 
-    public ErrorHandler(String errorMessage, int errorCode) {
+    public ErrorResponse(String errorMessage, int errorCode) {
         this.errorMessage = errorMessage;
         this.errorCode = errorCode;
     }

@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface CertificateDTOMapper {
 
-    Certificate toCertificateEntity(CertificateDTO dto);
+    Certificate toEntity(CertificateDTO dto);
 
-    CertificateDTO toCertificateDto(Certificate certificate, List<TagDTO> tagList);
+    CertificateDTO toDto(Certificate certificate, List<TagDTO> tagList);
 }

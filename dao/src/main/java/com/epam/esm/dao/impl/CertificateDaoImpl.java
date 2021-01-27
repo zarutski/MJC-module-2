@@ -2,6 +2,7 @@ package com.epam.esm.dao.impl;
 
 import com.epam.esm.dao.CertificateDao;
 import com.epam.esm.dao.exception.WrongInsertDataException;
+import com.epam.esm.dao.mapper.ColumnName;
 import com.epam.esm.domain.entity.Certificate;
 import com.epam.esm.dao.mapper.CertificateMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -9,6 +10,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 
+import javax.sql.DataSource;
 import java.sql.PreparedStatement;
 import java.util.List;
 import java.util.Objects;
@@ -29,21 +31,22 @@ public class CertificateDaoImpl implements CertificateDao {
             "JOIN tag AS t on cht.tag_id=t.id ";
     private static final String INSERT_CERTIFICATE = "INSERT INTO gift_certificate " +
             "(`name`, `description`, `price`, `duration`) VALUES (?, ?, ?, ?)";
-    private static final String SELECT_CERTIFICATE_BY_ID = "SELECT * FROM gift_certificate WHERE id=?";
-    private static final String SELECT_ALL_CERTIFICATES = "SELECT * FROM gift_certificate";
+    private static final String SELECT_CERTIFICATE_BY_ID = "SELECT c.id, c.name, c.description, c.price, " +
+            "c.duration, c.create_date, c.last_update_date FROM gift_certificate AS c WHERE id=?";
+    private static final String SELECT_ALL_CERTIFICATES = "SELECT c.id, c.name, c.description, c.price, " +
+            "c.duration, c.create_date, c.last_update_date FROM gift_certificate AS c";
     private static final String DELETE_CERTIFICATE = "DELETE FROM gift_certificate WHERE id = ?";
-    private static final String COLUMN_ID = "id";
 
     private final JdbcTemplate jdbcTemplate;
     private final CertificateMapper certificateMapper;
 
-    public CertificateDaoImpl(JdbcTemplate jdbcTemplate, CertificateMapper certificateMapper) {
-        this.jdbcTemplate = jdbcTemplate;
+    public CertificateDaoImpl(CertificateMapper certificateMapper, DataSource dataSource) {
+        this.jdbcTemplate = new JdbcTemplate(dataSource);
         this.certificateMapper = certificateMapper;
     }
 
     @Override
-    public Integer updateCertificate(Certificate certificate) {
+    public Integer update(Certificate certificate) {
         return jdbcTemplate.update(UPDATE_CERTIFICATE,
                 certificate.getName(),
                 certificate.getDescription(),
@@ -64,12 +67,11 @@ public class CertificateDaoImpl implements CertificateDao {
     }
 
     @Override
-    public Long createFromEntity(Certificate entity) {
+    public Long create(Certificate entity) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         try {
-
-            jdbcTemplate.update(con -> {
-                PreparedStatement ps = con.prepareStatement(INSERT_CERTIFICATE, new String[]{COLUMN_ID});
+            jdbcTemplate.update(connection -> {
+                PreparedStatement ps = connection.prepareStatement(INSERT_CERTIFICATE, new String[]{ColumnName.COLUMN_ID});
                 ps.setString(1, entity.getName());
                 ps.setString(2, entity.getDescription());
                 ps.setBigDecimal(3, entity.getPrice());
@@ -86,7 +88,7 @@ public class CertificateDaoImpl implements CertificateDao {
     public Optional<Certificate> readById(Long id) {
         return jdbcTemplate.query(SELECT_CERTIFICATE_BY_ID, certificateMapper, id)
                 .stream()
-                .findFirst();
+                .findFirst(); // TODO
     }
 
     @Override

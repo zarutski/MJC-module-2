@@ -13,7 +13,7 @@ import java.util.List;
  * @author Maksim Zarutski
  */
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/gift_certificates")
 public class CertificateController {
 
     private final CertificateService certificateService;
@@ -33,7 +33,7 @@ public class CertificateController {
      * @param order           order type
      * @return List of certificates found
      */
-    @GetMapping("/gift_certificates/search")
+    @GetMapping("/search")
     public List<CertificateDTO> searchCertificates(@RequestParam(value = "tag", required = false) String tagName,
                                                    @RequestParam(value = "name", required = false) String certificateName,
                                                    @RequestParam(value = "description", required = false) String description,
@@ -47,7 +47,7 @@ public class CertificateController {
      *
      * @return List of all certificates
      */
-    @GetMapping("/gift_certificates")
+    @GetMapping
     public List<CertificateDTO> readAllCertificates() {
         return certificateService.readAll();
     }
@@ -58,7 +58,7 @@ public class CertificateController {
      * @param id of the requested certificate
      * @return {@code CertificateDTO} object for provided id
      */
-    @GetMapping("/gift_certificates/{id}")
+    @GetMapping("/{id}")
     public CertificateDTO readCertificate(@PathVariable Long id) {
         return certificateService.readById(id);
     }
@@ -69,7 +69,7 @@ public class CertificateController {
      * @param certificate parameter containing info for creating certificate record
      * @return id of the created certificate
      */
-    @PostMapping("/gift_certificates")
+    @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Long createCertificate(@RequestBody CertificateDTO certificate) {
         return certificateService.create(certificate);
@@ -81,9 +81,9 @@ public class CertificateController {
      * @param certificate parameter containing update info
      * @return number of db records affected
      */
-    @PutMapping("/gift_certificates")
+    @PutMapping
     public Integer updateCertificate(@RequestBody CertificateDTO certificate) {
-        return certificateService.updateCertificate(certificate);
+        return certificateService.update(certificate);
     }
 
     /**
@@ -92,7 +92,7 @@ public class CertificateController {
      * @param id of the certificate that needs to be deleted
      * @return number of db records affected
      */
-    @DeleteMapping(value = "/gift_certificates/{id}")
+    @DeleteMapping("/{id}")
     public Integer delete(@PathVariable Long id) {
         return certificateService.deleteById(id);
     }

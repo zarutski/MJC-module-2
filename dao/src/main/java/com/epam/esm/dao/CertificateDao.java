@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface CertificateDao extends DBOperationCRD<Certificate> {
 
-    Integer updateCertificate(Certificate certificate);
+    Integer update(Certificate certificate);
 
     Integer createCertificateHasTag(Long certificateId, Long tagId);
 

@@ -7,8 +7,8 @@ import java.util.Optional;
 
 public interface TagDao extends DBOperationCRD<Tag> {
 
-    Optional<Tag> readByTagName(String name);
+    Optional<Tag> readByName(String name);
 
-    List<Tag> readTagsByCertificateId(Long certificateId);
+    List<Tag> readByCertificateId(Long certificateId);
 
 }

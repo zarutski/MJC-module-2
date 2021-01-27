@@ -6,13 +6,12 @@ import com.epam.esm.dao.parameters.SearchQueryProvider;
 import com.epam.esm.domain.dto.CertificateDTO;
 import com.epam.esm.domain.dto.TagDTO;
 import com.epam.esm.domain.entity.Certificate;
-import com.epam.esm.service.CertificateService;
 import com.epam.esm.service.TagService;
 import com.epam.esm.service.exception.IdNotExistException;
 import com.epam.esm.service.mapper.CertificateDTOMapper;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -29,8 +28,6 @@ import static org.mockito.Mockito.when;
 public class CertificateServiceImplTest {
 
     @Mock
-    private CertificateService certificateService;
-    @Mock
     private CertificateDao certificateDao;
     @Mock
     private CertificateDTOMapper certificateDTOMapper;
@@ -40,6 +37,8 @@ public class CertificateServiceImplTest {
     private SearchQueryProvider queryProvider;
     @Mock
     private ParametersProvider queryParametersProvider;
+    @InjectMocks
+    private CertificateServiceImpl certificateService;
 
     private static final String QUERY_PART = "query stub";
     private static final String PARAMETER_STUB = "parameter stub";
@@ -47,21 +46,15 @@ public class CertificateServiceImplTest {
     private static final Integer RECORDS_AFFECTED_NONE = 0;
     private static final Long RECORD_ID = 1L;
 
-    @BeforeEach
-    public void setup() {
-        certificateService =
-                new CertificateServiceImpl(certificateDao, certificateDTOMapper, tagService, queryProvider, queryParametersProvider);
-    }
-
     @Test
     void updateCertificatePositive() {
         Certificate certificate = new Certificate();
         CertificateDTO certificateDTO = new CertificateDTO();
 
-        when(certificateDao.updateCertificate(certificate)).thenReturn(RECORDS_AFFECTED_ONE);
-        when(certificateDTOMapper.toCertificateEntity(certificateDTO)).thenReturn(certificate);
+        when(certificateDao.update(certificate)).thenReturn(RECORDS_AFFECTED_ONE);
+        when(certificateDTOMapper.toEntity(certificateDTO)).thenReturn(certificate);
 
-        assertEquals(RECORDS_AFFECTED_ONE, certificateService.updateCertificate(certificateDTO));
+        assertEquals(RECORDS_AFFECTED_ONE, certificateService.update(certificateDTO));
     }
 
     @Test
@@ -69,10 +62,10 @@ public class CertificateServiceImplTest {
         Certificate certificate = new Certificate();
         CertificateDTO certificateDTO = new CertificateDTO();
 
-        when(certificateDao.updateCertificate(certificate)).thenReturn(RECORDS_AFFECTED_NONE);
-        when(certificateDTOMapper.toCertificateEntity(certificateDTO)).thenReturn(certificate);
+        when(certificateDao.update(certificate)).thenReturn(RECORDS_AFFECTED_NONE);
+        when(certificateDTOMapper.toEntity(certificateDTO)).thenReturn(certificate);
 
-        assertNotEquals(RECORDS_AFFECTED_ONE, certificateService.updateCertificate(certificateDTO));
+        assertNotEquals(RECORDS_AFFECTED_ONE, certificateService.update(certificateDTO));
     }
 
     @Test
@@ -88,7 +81,7 @@ public class CertificateServiceImplTest {
         when(queryProvider.getCertificateSearchQuery(PARAMETER_STUB, PARAMETER_STUB, PARAMETER_STUB, PARAMETER_STUB, PARAMETER_STUB)).thenReturn(QUERY_PART);
         when(queryParametersProvider.getCertificateParameters(PARAMETER_STUB, PARAMETER_STUB, PARAMETER_STUB)).thenReturn(queryParameters);
         when(certificateDao.searchByParameters(QUERY_PART, queryParameters)).thenReturn(certificates);
-        when(certificateDTOMapper.toCertificateDto(certificate, tagsDTO)).thenReturn(certificateDTO);
+        when(certificateDTOMapper.toDto(certificate, tagsDTO)).thenReturn(certificateDTO);
 
         List<CertificateDTO> actual = certificateService.searchByParameters(PARAMETER_STUB, PARAMETER_STUB, PARAMETER_STUB, PARAMETER_STUB, PARAMETER_STUB);
         assertEquals(expected, actual);
@@ -104,7 +97,7 @@ public class CertificateServiceImplTest {
         List<CertificateDTO> expected = Stream.of(certificateDTO).collect(Collectors.toList());
 
         when(certificateDao.readAll()).thenReturn(certificates);
-        when(certificateDTOMapper.toCertificateDto(certificate, tagsDTO)).thenReturn(certificateDTO);
+        when(certificateDTOMapper.toDto(certificate, tagsDTO)).thenReturn(certificateDTO);
 
         assertEquals(expected, certificateService.readAll());
     }
@@ -116,8 +109,8 @@ public class CertificateServiceImplTest {
         CertificateDTO expected = new CertificateDTO();
 
         when(certificateDao.readById(RECORD_ID)).thenReturn(Optional.of(certificate));
-        when(certificateDTOMapper.toCertificateDto(certificate, tagDTOList)).thenReturn(expected);
-        when(tagService.readTagsByCertificateId(RECORD_ID)).thenReturn(tagDTOList);
+        when(certificateDTOMapper.toDto(certificate, tagDTOList)).thenReturn(expected);
+        when(tagService.readByCertificateId(RECORD_ID)).thenReturn(tagDTOList);
 
         assertEquals(expected, certificateService.readById(RECORD_ID));
     }
@@ -136,8 +129,8 @@ public class CertificateServiceImplTest {
         List<TagDTO> tagDTOList = Stream.of(tagDTO).collect(Collectors.toList());
         certificateDTO.setTags(tagDTOList);
 
-        when(certificateDao.createFromEntity(certificate)).thenReturn(RECORD_ID);
-        when(certificateDTOMapper.toCertificateEntity(certificateDTO)).thenReturn(certificate);
+        when(certificateDao.create(certificate)).thenReturn(RECORD_ID);
+        when(certificateDTOMapper.toEntity(certificateDTO)).thenReturn(certificate);
         when(tagService.create(tagDTO)).thenReturn(RECORD_ID);
 
         assertEquals(RECORD_ID, certificateService.create(certificateDTO));
@@ -149,7 +142,7 @@ public class CertificateServiceImplTest {
         CertificateDTO certificateDTO = new CertificateDTO();
 
         // error during sql query
-        when(certificateDao.createFromEntity(certificate)).thenThrow(new RuntimeException());
+        when(certificateDao.create(certificate)).thenThrow(new RuntimeException());
         assertThrows(RuntimeException.class, () -> certificateService.create(certificateDTO));
     }
 

@@ -5,7 +5,7 @@ import java.util.Optional;
 
 public interface DBOperationCRD<T> {
 
-    Long createFromEntity(T entity);
+    Long create(T entity);
 
     Optional<T> readById(Long id);
 

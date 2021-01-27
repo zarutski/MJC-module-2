@@ -12,7 +12,7 @@ import java.util.List;
 public class CertificateDTOMapperImpl implements CertificateDTOMapper {
 
     @Override
-    public Certificate toCertificateEntity(CertificateDTO dto) {
+    public Certificate toEntity(CertificateDTO dto) {
         Certificate certificate = new Certificate();
         certificate.setId(dto.getId());
         certificate.setName(dto.getName());
@@ -25,7 +25,7 @@ public class CertificateDTOMapperImpl implements CertificateDTOMapper {
     }
 
     @Override
-    public CertificateDTO toCertificateDto(Certificate certificate, List<TagDTO> tagList) {
+    public CertificateDTO toDto(Certificate certificate, List<TagDTO> tagList) {
         CertificateDTO dto = new CertificateDTO();
         dto.setId(certificate.getId());
         dto.setName(certificate.getName());

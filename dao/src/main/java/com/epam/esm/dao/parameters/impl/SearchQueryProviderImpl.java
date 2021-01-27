@@ -53,14 +53,14 @@ public class SearchQueryProviderImpl implements SearchQueryProvider {
     }
 
     private String sortOrDefault(String sortBy) {
-        if (Objects.nonNull(sortBy) && sortBy.equalsIgnoreCase(NAME)) {
+        if (NAME.equalsIgnoreCase(sortBy)) {
             return ORDER_BY_CERTIFICATE.concat(SORT_TYPE_NAME);
         }
         return ORDER_BY_CERTIFICATE.concat(SORT_TYPE_DEFAULT);
     }
 
     private String orderOrDefault(String orderBy) {
-        if (Objects.nonNull(orderBy) && orderBy.equalsIgnoreCase(ORDER_TYPE_DESC)) {
+        if (ORDER_TYPE_DESC.equalsIgnoreCase(orderBy)) {
             return ORDER_TYPE_DESC;
         }
         return ORDER_TYPE_DEFAULT;

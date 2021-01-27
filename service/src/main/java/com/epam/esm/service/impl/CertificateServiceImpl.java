@@ -6,6 +6,7 @@ import com.epam.esm.dao.parameters.SearchQueryProvider;
 import com.epam.esm.domain.dto.CertificateDTO;
 import com.epam.esm.domain.dto.TagDTO;
 import com.epam.esm.domain.entity.Certificate;
+import com.epam.esm.domain.entity.Tag;
 import com.epam.esm.service.CertificateService;
 import com.epam.esm.service.TagService;
 import com.epam.esm.service.exception.IdNotExistException;
@@ -37,8 +38,8 @@ public class CertificateServiceImpl implements CertificateService {
 
     @Override
     @Transactional
-    public Integer updateCertificate(CertificateDTO certificate) {
-        return certificateDAO.updateCertificate(certificateDTOMapper.toCertificateEntity(certificate));
+    public Integer update(CertificateDTO certificate) {
+        return certificateDAO.update(certificateDTOMapper.toEntity(certificate));
     }
 
     @Override
@@ -48,7 +49,7 @@ public class CertificateServiceImpl implements CertificateService {
 
         return certificateDAO.searchByParameters(queryPart, queryParameters)
                 .stream()
-                .map(x -> certificateDTOMapper.toCertificateDto(x, tagService.readTagsByCertificateId(x.getId())))
+                .map(certificate -> certificateDTOMapper.toDto(certificate, tagService.readByCertificateId(certificate.getId())))
                 .collect(Collectors.toList());
     }
 
@@ -56,26 +57,30 @@ public class CertificateServiceImpl implements CertificateService {
     @Transactional
     public Long create(CertificateDTO dto) {
         // insert certificate
-        Certificate certificateEntity = certificateDTOMapper.toCertificateEntity(dto);
-        Long certificateId = certificateDAO.createFromEntity(certificateEntity);
+        Certificate certificateEntity = certificateDTOMapper.toEntity(dto);
+        Long certificateId = certificateDAO.create(certificateEntity);
 
         // insert tags
         List<TagDTO> tagsDTO = dto.getTags();
-        tagsDTO.forEach(tagDTO -> certificateDAO.createCertificateHasTag(certificateId, tagService.create(tagDTO)));
+        tagsDTO.forEach(tagDTO -> {
+            Long tagId = tagService.readByName(tagDTO.getName()).map(Tag::getId).orElseGet(() -> tagService.create(tagDTO));
+            certificateDAO.createCertificateHasTag(certificateId, tagId);
+        });
         return certificateId;
     }
 
     @Override
     public CertificateDTO readById(Long id) {
-        Certificate certificate = certificateDAO.readById(id).orElseThrow(() -> new IdNotExistException(id.toString()));
-        return certificateDTOMapper.toCertificateDto(certificate, tagService.readTagsByCertificateId(id));
+        return certificateDAO.readById(id)
+                .map(certificate -> certificateDTOMapper.toDto(certificate, tagService.readByCertificateId(id)))
+                .orElseThrow(() -> new IdNotExistException(id.toString()));
     }
 
     @Override
     public List<CertificateDTO> readAll() {
         return certificateDAO.readAll()
                 .stream()
-                .map(certificate -> certificateDTOMapper.toCertificateDto(certificate, tagService.readTagsByCertificateId(certificate.getId())))
+                .map(certificate -> certificateDTOMapper.toDto(certificate, tagService.readByCertificateId(certificate.getId())))
                 .collect(Collectors.toList());
     }
 

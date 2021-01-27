@@ -25,32 +25,32 @@ public class TagServiceImpl implements TagService {
     }
 
     @Override
-    public List<TagDTO> readTagsByCertificateId(Long certificateId) {
-        List<Tag> byCertificateId = tagDao.readTagsByCertificateId(certificateId);
-        return tagDTOMapper.toTagDTOList(byCertificateId);
+    public List<TagDTO> readByCertificateId(Long certificateId) {
+        List<Tag> byCertificateId = tagDao.readByCertificateId(certificateId);
+        return tagDTOMapper.toDTOList(byCertificateId);
+    }
+
+    @Override
+    public Optional<Tag> readByName(String name) {
+        return tagDao.readByName(name);
     }
 
     @Override
     @Transactional
     public Long create(TagDTO dto) {
-        Optional<Tag> tagInDB = tagDao.readByTagName(dto.getName());
-        if (tagInDB.isPresent()) {
-            return tagInDB.get().getId();
-        }
-
-        return tagDao.createFromEntity(tagDTOMapper.toTagEntity(dto));
+        return tagDao.create(tagDTOMapper.toEntity(dto));
     }
 
     @Override
     public TagDTO readById(Long id) {
-        return tagDTOMapper.toTagDTO(tagDao.readById(id).orElseThrow(() -> new IdNotExistException(id.toString())));
+        return tagDTOMapper.toDTO(tagDao.readById(id).orElseThrow(() -> new IdNotExistException(id.toString())));
     }
 
     @Override
     public List<TagDTO> readAll() {
         return tagDao.readAll()
                 .stream()
-                .map(tagDTOMapper::toTagDTO)
+                .map(tagDTOMapper::toDTO)
                 .collect(Collectors.toList());
     }
 
