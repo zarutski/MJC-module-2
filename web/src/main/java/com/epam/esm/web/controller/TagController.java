@@ -5,6 +5,7 @@ import com.epam.esm.service.TagService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 /**
@@ -30,7 +31,7 @@ public class TagController {
      */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Long createTag(@RequestBody TagDTO tag) {
+    public Long createTag(@Valid @RequestBody TagDTO tag) {
         return tagService.create(tag);
     }
 

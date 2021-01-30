@@ -1,8 +1,11 @@
 package com.epam.esm.web.controller;
 
 import com.epam.esm.domain.dto.CertificateDTO;
+import com.epam.esm.domain.validation.CreateGroup;
+import com.epam.esm.domain.validation.UpdateGroup;
 import com.epam.esm.service.CertificateService;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -71,7 +74,7 @@ public class CertificateController {
      */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Long createCertificate(@RequestBody CertificateDTO certificate) {
+    public Long createCertificate(@Validated(CreateGroup.class) @RequestBody CertificateDTO certificate) {
         return certificateService.create(certificate);
     }
 
@@ -82,7 +85,7 @@ public class CertificateController {
      * @return number of db records affected
      */
     @PutMapping
-    public Integer updateCertificate(@RequestBody CertificateDTO certificate) {
+    public Integer updateCertificate(@Validated(UpdateGroup.class) @RequestBody CertificateDTO certificate) {
         return certificateService.update(certificate);
     }
 

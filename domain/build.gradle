@@ -4,4 +4,5 @@ plugins {
 
 dependencies {
     compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.12.1'
+    compile group: 'org.hibernate', name: 'hibernate-validator', version: '6.2.0.Final'
 }
