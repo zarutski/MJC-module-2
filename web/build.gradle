@@ -1,0 +1,6 @@
+dependencies {
+    compile group: 'org.springframework', name: 'spring-webmvc', version: '5.3.3'
+    compile group: 'javax.servlet', name: 'javax.servlet-api', version: '4.0.1'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.12.1'
+    compile project(':service')
+}
