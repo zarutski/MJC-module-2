@@ -1,6 +1,9 @@
+plugins {
+    id 'org.springframework.boot' version '2.4.2'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+}
+
 dependencies {
-    compile group: 'org.springframework', name: 'spring-webmvc', version: '5.3.3'
-    compile group: 'javax.servlet', name: 'javax.servlet-api', version: '4.0.1'
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.12.1'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
     compile project(':service')
 }

@@ -1,15 +1,19 @@
 package com.epam.esm.dao;
 
+import com.epam.esm.domain.util.SearchParameter;
 import com.epam.esm.domain.entity.Certificate;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface CertificateDao extends DBOperationCRD<Certificate> {
 
-    Integer update(Certificate certificate);
+    Optional<Certificate> update(Certificate certificate);
 
-    Integer createCertificateHasTag(Long certificateId, Long tagId);
+    List<Certificate> searchByParameters(SearchParameter parameter, int page, int limit);
 
-    List<Certificate> searchByParameters(String query, List<String> parameters);
+    Long getEntitiesCount(SearchParameter searchParameter);
+
+    Long getEntitiesCount();
 
 }

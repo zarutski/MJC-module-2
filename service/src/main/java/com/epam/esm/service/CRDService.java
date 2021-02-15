@@ -4,11 +4,13 @@ import java.util.List;
 
 public interface CRDService<T> {
 
-    Long create(T dto);
+    T create(T dto);
 
     T readById(Long id);
 
-    List<T> readAll();
+    List<T> readAll(int page, int size);
 
-    Integer deleteById(Long id);
+    void deleteById(Long id);
+
+    Long getEntitiesCount();
 }

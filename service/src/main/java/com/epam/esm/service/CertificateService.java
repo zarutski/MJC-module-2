@@ -1,12 +1,16 @@
 package com.epam.esm.service;
 
 import com.epam.esm.domain.dto.CertificateDTO;
+import com.epam.esm.domain.util.SearchParameter;
 
 import java.util.List;
 
 public interface CertificateService extends CRDService<CertificateDTO> {
 
-    Integer update(CertificateDTO certificate);
+    CertificateDTO update(CertificateDTO certificate);
 
-    List<CertificateDTO> searchByParameters(String tagName, String certificateName, String description, String sortBy, String order);
+    List<CertificateDTO> searchByParameters(SearchParameter searchParameter, int page, int size);
+
+    Long getEntitiesCount(SearchParameter searchParameter);
+
 }

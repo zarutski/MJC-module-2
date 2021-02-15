@@ -5,11 +5,12 @@ import java.util.Optional;
 
 public interface DBOperationCRD<T> {
 
-    Long create(T entity);
+    Optional<T> create(T entity);
 
     Optional<T> readById(Long id);
 
-    List<T> readAll();
+    List<T> readAll(int page, int size);
 
-    Integer deleteById(Long id);
+    void deleteById(Long id);
+
 }

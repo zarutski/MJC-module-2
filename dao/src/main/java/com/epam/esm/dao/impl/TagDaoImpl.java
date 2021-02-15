@@ -1,87 +1,99 @@
 package com.epam.esm.dao.impl;
 
 import com.epam.esm.dao.TagDao;
-import com.epam.esm.dao.exception.EntityAlreadyExistsException;
-import com.epam.esm.dao.exception.WrongInsertDataException;
-import com.epam.esm.dao.mapper.ColumnName;
+import com.epam.esm.dao.exception.EntityNotInDBException;
+import com.epam.esm.domain.entity.Certificate;
+import com.epam.esm.domain.entity.Order;
 import com.epam.esm.domain.entity.Tag;
-import com.epam.esm.dao.mapper.TagMapper;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.jdbc.support.KeyHolder;
-import org.springframework.stereotype.Component;
+import com.epam.esm.domain.entity.User;
+import org.springframework.stereotype.Repository;
 
-import java.sql.PreparedStatement;
-import java.util.List;
-import java.util.Optional;
+import javax.persistence.EntityManager;
+import javax.persistence.criteria.*;
+import java.util.*;
 
-@Component
+import static com.epam.esm.dao.util.ParameterValue.*;
+
+@Repository
 public class TagDaoImpl implements TagDao {
 
-    private static final String SELECT_TAG_BY_NAME = "SELECT * FROM tag WHERE name=?";
-    private static final String SELECT_TAGS_FOR_CERTIFICATE = "SELECT t.id, t.name FROM tag AS t " +
-            "INNER JOIN gift_certificate_has_tag AS ght ON t.id = ght.tag_id " +
-            "INNER JOIN gift_certificate AS g ON g.id=ght.gift_certificate_id " +
-            "WHERE gift_certificate_id=?";
-    private static final String CREATE_TAG = "INSERT INTO tag (`name`) SELECT ? " +
-            "WHERE NOT EXISTS (SELECT name FROM tag WHERE name=? LIMIT 1)";
-    private static final String SELECT_TAG_BY_ID = "SELECT tag.id, tag.name FROM tag WHERE id=?";
-    private static final String SELECT_ALL_TAGS = "SELECT tag.id, tag.name FROM tag";
-    private static final String DELETE_TAG = "DELETE FROM tag WHERE tag.id = ? AND NOT EXISTS " +
-            "(SELECT * FROM gift_certificate_has_tag AS ght WHERE ght.tag_id = ?)";
+    private static final String SELECT_BY_TAG_NAME = "select tag From Tag tag where tag.name=:name";
+    private static final String ATTRIBUTE_ORDER_LIST = "orderList";
+    private static final String ATTRIBUTE_CERTIFICATE_LIST = "giftCertificateList";
+    private static final String COLUMN_ID = "id";
 
-    private final JdbcTemplate jdbcTemplate;
-    private final TagMapper tagMapper;
+    private final EntityManager entityManager;
 
-    public TagDaoImpl(JdbcTemplate jdbcTemplate, TagMapper tagMapper) {
-        this.jdbcTemplate = jdbcTemplate;
-        this.tagMapper = tagMapper;
+    public TagDaoImpl(EntityManager entityManager) {
+        this.entityManager = entityManager;
+    }
+
+    @Override
+    public Optional<Tag> readById(final Long tagId) {
+        return Optional.ofNullable(entityManager.find(Tag.class, tagId));
+    }
+
+    @Override
+    public List<Tag> readAll(int page, int size) {
+        CriteriaQuery<Tag> query = entityManager.getCriteriaBuilder().createQuery(Tag.class);
+        Root<Tag> root = query.from(Tag.class);
+        query.select(root);
+        int startPosition = (page - INT_VALUE_OFFSET) * size;
+        return entityManager.createQuery(query)
+                .setFirstResult(startPosition)
+                .setMaxResults(size)
+                .getResultList();
+    }
+
+    @Override
+    public Optional<Tag> create(Tag tag) {
+        entityManager.persist(tag);
+        return Optional.of(tag);
+    }
+
+    @Override
+    public void deleteById(final Long tagId) {
+        Tag tag = entityManager.find(Tag.class, tagId);
+        if (entityManager.contains(tag)) {
+            entityManager.remove(tag);
+        } else {
+            throw new EntityNotInDBException(tagId.toString());
+        }
     }
 
     @Override
     public Optional<Tag> readByName(String name) {
-        return jdbcTemplate.query(SELECT_TAG_BY_NAME, tagMapper, name).stream().findFirst();
+        return Optional.of(entityManager.createQuery(SELECT_BY_TAG_NAME, Tag.class)
+                .setParameter(PARAMETER_NAME, name)
+                .getResultStream()
+                .findFirst()
+                .orElseThrow(() -> new EntityNotInDBException(name)));
     }
 
     @Override
-    public List<Tag> readByCertificateId(Long certificateId) {
-        return jdbcTemplate.query(SELECT_TAGS_FOR_CERTIFICATE, tagMapper, certificateId);
+    public Long getEntitiesCount() {
+        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Long> query = builder.createQuery(Long.class);
+        query.select(builder.count(query.from(Tag.class)));
+        return entityManager.createQuery(query).getSingleResult();
     }
 
     @Override
-    public Long create(Tag entity) {
-        KeyHolder keyHolder = new GeneratedKeyHolder();
-        try {
-            jdbcTemplate.update(connection -> {
-                PreparedStatement preparedStatement = connection.prepareStatement(CREATE_TAG, new String[]{ColumnName.COLUMN_ID});
-                String tagName = entity.getName();
-                preparedStatement.setString(1, tagName);
-                preparedStatement.setString(2, tagName);
-                return preparedStatement;
-            }, keyHolder);
-        } catch (Exception e) {
-            throw new WrongInsertDataException();
-        }
-        Number key = keyHolder.getKey();
-        if (key == null) {
-            throw new EntityAlreadyExistsException(entity.getName());
-        }
-        return key.longValue();
-    }
+    public Optional<Tag> getMostUsedUserTag(Long userID) {
+        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Tag> tagQuery = criteriaBuilder.createQuery(Tag.class);
+        Root<User> userRoot = tagQuery.from(User.class);
 
-    @Override
-    public Optional<Tag> readById(Long id) {
-        return jdbcTemplate.query(SELECT_TAG_BY_ID, tagMapper, id).stream().findFirst();
-    }
+        ListJoin<User, Order> orderList = userRoot.joinList(ATTRIBUTE_ORDER_LIST);
+        ListJoin<Order, Certificate> giftList = orderList.joinList(ATTRIBUTE_CERTIFICATE_LIST);
+        ListJoin<Certificate, Tag> tagList = giftList.joinList(PARAMETER_TAG);
 
-    @Override
-    public List<Tag> readAll() {
-        return jdbcTemplate.query(SELECT_ALL_TAGS, tagMapper);
-    }
+        Expression orderID = tagList.get(COLUMN_ID);
+        tagQuery.select(tagList)
+                .where(criteriaBuilder.equal(userRoot.get(COLUMN_ID), userID))
+                .groupBy(orderID)
+                .orderBy(criteriaBuilder.desc(criteriaBuilder.count(orderID)));
 
-    @Override
-    public Integer deleteById(Long id) {
-        return jdbcTemplate.update(DELETE_TAG, id, id);
+        return Optional.of(entityManager.createQuery(tagQuery).setMaxResults(1).getSingleResult());
     }
-
 }
