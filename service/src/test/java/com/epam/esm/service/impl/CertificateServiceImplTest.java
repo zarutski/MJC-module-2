@@ -1,9 +1,8 @@
 package com.epam.esm.service.impl;
 
 import com.epam.esm.dao.CertificateDao;
-import com.epam.esm.dao.TagDao;
+import com.epam.esm.service.TagService;
 import com.epam.esm.service.exception.CreateEntityInternalException;
-import com.epam.esm.dao.exception.EntityNotInDBException;
 import com.epam.esm.domain.dto.CertificateDTO;
 import com.epam.esm.domain.dto.TagDTO;
 import com.epam.esm.domain.entity.Certificate;
@@ -22,8 +21,9 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.doThrow;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -34,14 +34,14 @@ public class CertificateServiceImplTest {
     @Mock
     private ModelMapper modelMapper;
     @Mock
-    private TagDao tagDao;
+    private TagService tagService;
     @InjectMocks
     private CertificateServiceImpl certificateService;
 
     private static final String TAG_NAME = "tag name";
-    private static final Integer VALUE_PAGE = 1;
-    private static final Integer VALUE_SIZE = 3;
-    private static final Long LONG_VALUE_ONE = 1L;
+    private static final Integer PAGE_NUMBER = 1;
+    private static final Integer RECORDS_PER_PAGE = 3;
+    private static final Long RECORD_ID = 1L;
 
     @Test
     void updateCertificatePositive() {
@@ -51,13 +51,14 @@ public class CertificateServiceImplTest {
         when(certificateDao.readById(certificateDTO.getId())).thenReturn(Optional.of(certificate));
         when(certificateDao.update(certificate)).thenReturn(Optional.of(certificate));
         when(modelMapper.map(certificate, CertificateDTO.class)).thenReturn(certificateDTO);
+        when(modelMapper.map(certificateDTO, Certificate.class)).thenReturn(certificate);
         assertEquals(certificateDTO, certificateService.update(certificateDTO));
     }
 
     @Test
     void updateCertificateNegative() {
         CertificateDTO certificateDTO = new CertificateDTO();
-        certificateDTO.setId(LONG_VALUE_ONE);
+        certificateDTO.setId(RECORD_ID);
 
         when(certificateDao.readById(certificateDTO.getId())).thenReturn(Optional.empty());
         assertThrows(IdNotExistException.class, () -> certificateService.update(certificateDTO));
@@ -71,10 +72,10 @@ public class CertificateServiceImplTest {
         List<CertificateDTO> expected = Stream.of(certificateDTO).collect(Collectors.toList());
         SearchParameter searchParameter = new SearchParameter();
 
-        when(certificateDao.searchByParameters(searchParameter, VALUE_PAGE, VALUE_SIZE)).thenReturn(certificates);
+        when(certificateDao.searchByParameters(searchParameter, PAGE_NUMBER, RECORDS_PER_PAGE)).thenReturn(certificates);
         when(modelMapper.map(certificate, CertificateDTO.class)).thenReturn(certificateDTO);
 
-        List<CertificateDTO> actual = certificateService.searchByParameters(searchParameter, VALUE_PAGE, VALUE_SIZE);
+        List<CertificateDTO> actual = certificateService.searchByParameters(searchParameter, PAGE_NUMBER, RECORDS_PER_PAGE);
         assertEquals(expected, actual);
     }
 
@@ -85,9 +86,9 @@ public class CertificateServiceImplTest {
         CertificateDTO certificateDTO = new CertificateDTO();
         List<CertificateDTO> expected = Stream.of(certificateDTO).collect(Collectors.toList());
 
-        when(certificateDao.readAll(VALUE_PAGE, VALUE_SIZE)).thenReturn(certificates);
+        when(certificateDao.readAll(PAGE_NUMBER, RECORDS_PER_PAGE)).thenReturn(certificates);
         when(modelMapper.map(certificate, CertificateDTO.class)).thenReturn(certificateDTO);
-        assertEquals(expected, certificateService.readAll(VALUE_PAGE, VALUE_SIZE));
+        assertEquals(expected, certificateService.readAll(PAGE_NUMBER, RECORDS_PER_PAGE));
     }
 
     @Test
@@ -95,60 +96,59 @@ public class CertificateServiceImplTest {
         Certificate certificate = new Certificate();
         CertificateDTO expected = new CertificateDTO();
 
-        when(certificateDao.readById(LONG_VALUE_ONE)).thenReturn(Optional.of(certificate));
+        when(certificateDao.readById(RECORD_ID)).thenReturn(Optional.of(certificate));
         when(modelMapper.map(certificate, CertificateDTO.class)).thenReturn(expected);
-        assertEquals(expected, certificateService.readById(LONG_VALUE_ONE));
+        assertEquals(expected, certificateService.readById(RECORD_ID));
     }
 
     @Test
     void readByIdNegative() {
-        when(certificateDao.readById(LONG_VALUE_ONE)).thenReturn(Optional.empty());
-        assertThrows(IdNotExistException.class, () -> certificateService.readById(LONG_VALUE_ONE));
+        when(certificateDao.readById(RECORD_ID)).thenReturn(Optional.empty());
+        assertThrows(IdNotExistException.class, () -> certificateService.readById(RECORD_ID));
     }
 
     @Test
     void createPositive() {
         Certificate certificate = new Certificate();
         CertificateDTO certificateDTO = new CertificateDTO();
+        Tag tag = new Tag();
         TagDTO tagDTO = new TagDTO();
         tagDTO.setName(TAG_NAME);
         List<TagDTO> tagDTOList = Stream.of(tagDTO).collect(Collectors.toList());
         certificateDTO.setTags(tagDTOList);
 
         when(modelMapper.map(certificateDTO, Certificate.class)).thenReturn(certificate);
-        when(tagDao.readByName(TAG_NAME)).thenReturn(Optional.of(new Tag()));
-        when(certificateDao.create(certificate)).thenReturn(Optional.of(certificate));
         when(modelMapper.map(certificate, CertificateDTO.class)).thenReturn(certificateDTO);
+        when(modelMapper.map(tagDTO, Tag.class)).thenReturn(tag);
+        when(certificateDao.create(certificate)).thenReturn(Optional.of(certificate));
+        when(tagService.readByName(TAG_NAME)).thenReturn(tagDTO);
 
         assertEquals(certificateDTO, certificateService.create(certificateDTO));
     }
 
     @Test
     void createNegative() {
-        Tag tag = new Tag();
         CertificateDTO certificateDTO = new CertificateDTO();
         TagDTO tagDTO = new TagDTO();
         tagDTO.setName(TAG_NAME);
         List<TagDTO> tagDTOList = Stream.of(tagDTO).collect(Collectors.toList());
         certificateDTO.setTags(tagDTOList);
 
-        // error creating entity
         when(modelMapper.map(certificateDTO, Certificate.class)).thenReturn(new Certificate());
-        when(tagDao.readByName(TAG_NAME)).thenReturn(Optional.empty());
-        when(tagDao.create(tag)).thenReturn(Optional.empty());
-        when(modelMapper.map(tagDTO, Tag.class)).thenReturn(tag);
-
+        when(tagService.readByName(TAG_NAME)).thenThrow(new IdNotExistException());
+        when(tagService.create(tagDTO)).thenThrow(new CreateEntityInternalException());
         assertThrows(CreateEntityInternalException.class, () -> certificateService.create(certificateDTO));
     }
 
     @Test
     void deleteByIdPositive() {
-        assertDoesNotThrow(() -> certificateService.deleteById(LONG_VALUE_ONE));
+        when(certificateDao.readById(RECORD_ID)).thenReturn(Optional.of(new Certificate()));
+        assertDoesNotThrow(() -> certificateService.deleteById(RECORD_ID));
     }
 
     @Test
     void deleteByIdNegative() {
-        doThrow(new EntityNotInDBException()).when(certificateDao).deleteById(LONG_VALUE_ONE);
-        assertThrows(EntityNotInDBException.class, () -> certificateService.deleteById(LONG_VALUE_ONE));
+        when(certificateDao.readById(RECORD_ID)).thenReturn(Optional.empty());
+        assertThrows(IdNotExistException.class, () -> certificateService.deleteById(RECORD_ID));
     }
 }

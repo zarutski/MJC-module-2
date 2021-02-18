@@ -1,7 +1,6 @@
 package com.epam.esm.web.exception;
 
 import com.epam.esm.service.exception.CreateEntityInternalException;
-import com.epam.esm.dao.exception.EntityNotInDBException;
 import com.epam.esm.service.exception.UpdateEntityInternalException;
 import com.epam.esm.service.exception.IdNotExistException;
 import com.mysql.cj.jdbc.exceptions.MysqlDataTruncation;
@@ -38,7 +37,6 @@ public class APIExceptionHandler extends ResponseEntityExceptionHandler {
     private static final int CODE_BAD_REQUEST = 40002;
     private static final int CODE_NOT_FOUND = 40401;
     private static final int CODE_WRONG_ID = 40402;
-    private static final int CODE_WRONG_RESOURCE = 40403;
     private static final int CODE_NOT_ALLOWED = 40501;
     private static final int CODE_CONSTRAINT_VIOLATION = 40901;
     private static final int CODE_MEDIA_NOT_SUPPORTED = 41501;
@@ -51,7 +49,6 @@ public class APIExceptionHandler extends ResponseEntityExceptionHandler {
     private static final String KEY_BAD_REQUEST = "bad_request_format";
     private static final String KEY_NOT_FOUND = "not_found";
     private static final String KEY_WRONG_ID = "wrong_resource_id";
-    private static final String KEY_WRONG_RESOURCE = "wrong_resource";
     private static final String KEY_NOT_ALLOWED = "method_not_allowed";
     private static final String KEY_CONSTRAINT_VIOLATION = "conflict";
     private static final String KEY_MEDIA_NOT_SUPPORTED = "media_not_supported";
@@ -85,17 +82,18 @@ public class APIExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ResponseBody
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleEntityNotInDBException(EntityNotInDBException exception) {
-        return getErrorResponse(KEY_WRONG_RESOURCE, CODE_WRONG_RESOURCE, exception.getMessage());
-    }
-
-    @ResponseBody
-    @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponse handleConstraintViolationException(ConstraintViolationException exception) {
         return getErrorResponse(KEY_CONSTRAINT_VIOLATION, CODE_CONSTRAINT_VIOLATION,
                 exception.getErrorCode() + MESSAGE_EMPTY);
+    }
+
+    @ResponseBody
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleViolationException(javax.validation.ConstraintViolationException exception) {
+        return getErrorResponse(KEY_DATA_FORMAT, CODE_DATA_FORMAT,
+                exception.getMessage());
     }
 
     @ResponseBody

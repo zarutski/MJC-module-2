@@ -29,24 +29,25 @@ public class UserServiceImplTest {
     @InjectMocks
     private UserServiceImpl userService;
 
-    private static final Integer VALUE_PAGE = 1;
-    private static final Integer VALUE_SIZE = 3;
-    private static final Long LONG_VALUE_ONE = 1L;
+    private static final Integer PAGE_NUMBER = 1;
+    private static final Integer RECORDS_PER_PAGE = 3;
+    private static final Long RECORD_ID = 1L;
+    private static final Long ENTITIES_COUNT = 2L;
 
     @Test
     void readByIdPositive() {
         UserDTO userDTO = new UserDTO();
         User user = new User();
 
-        when(userDao.readById(LONG_VALUE_ONE)).thenReturn(Optional.of(user));
+        when(userDao.readById(RECORD_ID)).thenReturn(Optional.of(user));
         when(modelMapper.map(user, UserDTO.class)).thenReturn(userDTO);
-        assertEquals(userDTO, userService.readById(LONG_VALUE_ONE));
+        assertEquals(userDTO, userService.readById(RECORD_ID));
     }
 
     @Test
     void readByIdNegative() {
-        when(userDao.readById(LONG_VALUE_ONE)).thenReturn(Optional.empty());
-        assertThrows(IdNotExistException.class, () -> userService.readById(LONG_VALUE_ONE));
+        when(userDao.readById(RECORD_ID)).thenReturn(Optional.empty());
+        assertThrows(IdNotExistException.class, () -> userService.readById(RECORD_ID));
     }
 
     @Test
@@ -56,14 +57,14 @@ public class UserServiceImplTest {
         List<User> userList = Stream.of(user).collect(Collectors.toList());
         List<UserDTO> userDTOList = Stream.of(userDTO).collect(Collectors.toList());
 
-        when(userDao.readAll(VALUE_PAGE, VALUE_SIZE)).thenReturn(userList);
+        when(userDao.readAll(PAGE_NUMBER, RECORDS_PER_PAGE)).thenReturn(userList);
         when(modelMapper.map(user, UserDTO.class)).thenReturn(userDTO);
-        assertEquals(userDTOList, userService.readAll(VALUE_PAGE, VALUE_SIZE));
+        assertEquals(userDTOList, userService.readAll(PAGE_NUMBER, RECORDS_PER_PAGE));
     }
 
     @Test
     void getEntitiesCount() {
-        when(userDao.getEntitiesCount()).thenReturn(LONG_VALUE_ONE);
-        assertEquals(LONG_VALUE_ONE, userService.getEntitiesCount());
+        when(userDao.getEntitiesCount()).thenReturn(ENTITIES_COUNT);
+        assertEquals(ENTITIES_COUNT, userService.getEntitiesCount());
     }
 }

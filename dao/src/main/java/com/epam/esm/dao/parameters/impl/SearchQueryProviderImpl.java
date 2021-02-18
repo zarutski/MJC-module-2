@@ -7,7 +7,11 @@ import com.epam.esm.domain.util.SearchParameter;
 import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityManager;
-import javax.persistence.criteria.*;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Order;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -36,48 +40,50 @@ public class SearchQueryProviderImpl implements SearchQueryProvider {
     private CriteriaQuery<Certificate> criteriaQuery;
     private Root<Certificate> certificateRoot;
 
-
     public CriteriaQuery<Certificate> buildQuery(SearchParameter parameter) {
         criteriaBuilder = entityManager.getCriteriaBuilder();
         criteriaQuery = criteriaBuilder.createQuery(Certificate.class);
-        certificateRoot = criteriaQuery.from(Certificate.class);
+        setPredicateList(parameter);
+        setColumnSortOrder(parameter.getSortBy(), parameter.getOrder());
+        return criteriaQuery;
+    }
 
-        // set search predicates
+    private void setPredicateList(SearchParameter parameter) {
+        certificateRoot = criteriaQuery.from(Certificate.class);
         List<Predicate> predicateList = buildPredicateList(parameter);
         criteriaQuery.select(certificateRoot).where(predicateList.toArray(new Predicate[0]));
-
-        // set sort order
-        String sortBy = sortOrDefault(parameter.getSortBy());
-        setColumnSortOrder(sortBy, parameter.getOrder());
-        return criteriaQuery;
     }
 
     private List<Predicate> buildPredicateList(SearchParameter parameter) {
         List<Predicate> predicateList = new ArrayList<>();
         String name = parameter.getName();
         if (Objects.nonNull(name)) {
-            Predicate predicate = criteriaBuilder.like(certificateRoot.get(PARAMETER_NAME),
-                    PARAMETER_ANY + name + PARAMETER_ANY);
-            predicateList.add(predicate);
+            predicateList.add(buildPredicateAny(PARAMETER_NAME, name));
         }
 
         String description = parameter.getDescription();
         if (Objects.nonNull(description)) {
-            Predicate predicate = criteriaBuilder.like(certificateRoot.get(ATTRIBUTE_DESCRIPTION),
-                    PARAMETER_ANY + description + PARAMETER_ANY);
-            predicateList.add(predicate);
+            predicateList.add(buildPredicateAny(ATTRIBUTE_DESCRIPTION, description));
         }
 
         List<String> tagNames = parameter.getTagNames();
         if (tagNames != null && !tagNames.isEmpty()) {
-            List<String> distinctNames = tagNames.stream().distinct().collect(Collectors.toList());
-            List<Tag> tags = entityManager.createQuery(SELECT_TAG_BY_NAME, Tag.class)
-                    .setParameter(PARAMETER_TAG_NAMES, distinctNames).getResultList();
+            List<Tag> tags = getTagByNames(tagNames);
             tags.forEach(tag -> predicateList.add(criteriaBuilder.isMember(tag, certificateRoot.get(PARAMETER_TAG))));
         }
         return predicateList;
     }
 
+    private Predicate buildPredicateAny(String attributeName, String attributeValue) {
+        return criteriaBuilder.like(certificateRoot.get(attributeName),
+                PARAMETER_ANY + attributeValue + PARAMETER_ANY);
+    }
+
+    private List<Tag> getTagByNames(List<String> tagNames) {
+        List<String> distinctNames = tagNames.stream().distinct().collect(Collectors.toList());
+        return entityManager.createQuery(SELECT_TAG_BY_NAME, Tag.class)
+                .setParameter(PARAMETER_TAG_NAMES, distinctNames).getResultList();
+    }
 
     private String sortOrDefault(String sortBy) {
         if (PARAMETER_NAME.equalsIgnoreCase(sortBy)) {
@@ -87,6 +93,7 @@ public class SearchQueryProviderImpl implements SearchQueryProvider {
     }
 
     private void setColumnSortOrder(String sortBy, String orderBy) {
+        sortBy = sortOrDefault(sortBy);
         Order order;
         if (ORDER_TYPE_DESC.equalsIgnoreCase(orderBy)) {
             order = criteriaBuilder.desc(certificateRoot.get(sortBy));

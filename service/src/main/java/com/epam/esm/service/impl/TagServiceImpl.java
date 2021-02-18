@@ -1,7 +1,7 @@
 package com.epam.esm.service.impl;
 
 import com.epam.esm.dao.TagDao;
-import com.epam.esm.dao.UserDao;
+import com.epam.esm.service.UserService;
 import com.epam.esm.service.exception.CreateEntityInternalException;
 import com.epam.esm.domain.dto.TagDTO;
 import com.epam.esm.domain.entity.Tag;
@@ -19,18 +19,18 @@ import java.util.stream.Collectors;
 public class TagServiceImpl implements TagService {
 
     private final TagDao tagDao;
-    private final UserDao userDao;
+    private final UserService userService;
     private final ModelMapper modelMapper;
 
-    public TagServiceImpl(TagDao tagDao, UserDao userDao, ModelMapper modelMapper) {
+    public TagServiceImpl(TagDao tagDao, UserService userService, ModelMapper modelMapper) {
         this.tagDao = tagDao;
-        this.userDao = userDao;
+        this.userService = userService;
         this.modelMapper = modelMapper;
     }
 
     @Override
-    public TagDTO create(TagDTO dto) {
-        return tagDao.create(modelMapper.map(dto, Tag.class))
+    public TagDTO create(TagDTO tagDTO) {
+        return tagDao.create(modelMapper.map(tagDTO, Tag.class))
                 .map(tag -> modelMapper.map(tag, TagDTO.class))
                 .orElseThrow(CreateEntityInternalException::new);
     }
@@ -51,7 +51,8 @@ public class TagServiceImpl implements TagService {
 
     @Override
     public void deleteById(Long id) {
-        tagDao.deleteById(id);
+        Tag tag = tagDao.readById(id).orElseThrow(() -> new IdNotExistException(id.toString()));
+        tagDao.delete(tag);
     }
 
     @Override
@@ -60,8 +61,15 @@ public class TagServiceImpl implements TagService {
     }
 
     @Override
+    @Transactional(noRollbackFor = IdNotExistException.class)
+    public TagDTO readByName(String name) {
+        Tag tag = tagDao.readByName(name).orElseThrow(() -> new IdNotExistException(name));
+        return modelMapper.map(tag, TagDTO.class);
+    }
+
+    @Override
     public TagDTO getMostUsedTagFromUserWithOrdersHighestCost() {
-        Long userId = userDao.getUserIdWithOrdersHighestCost();
+        Long userId = userService.getUserIdWithOrdersHighestCost();
         Tag tag = tagDao.getMostUsedUserTag(userId).orElseThrow(() -> new IdNotExistException(userId.toString()));
         return modelMapper.map(tag, TagDTO.class);
     }

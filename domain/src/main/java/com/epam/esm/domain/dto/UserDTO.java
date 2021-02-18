@@ -1,7 +1,6 @@
 package com.epam.esm.domain.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -17,14 +16,14 @@ import java.util.List;
 public class UserDTO extends RepresentationModel<UserDTO> {
 
     private Long id;
-    private String name;
-    private String surname;
+    private String firstName;
+    private String lastName;
     @JsonIgnore
     private String email;
     @JsonIgnore
     private String login;
     @JsonIgnore
     private String password;
-    @JsonIgnoreProperties(value = {"giftCertificateList"})
+    @JsonIgnore
     private List<OrderDTO> orderList;
 }

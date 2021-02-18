@@ -1,7 +1,8 @@
 package com.epam.esm.service.impl;
 
 import com.epam.esm.dao.CertificateDao;
-import com.epam.esm.dao.TagDao;
+import com.epam.esm.domain.dto.TagDTO;
+import com.epam.esm.service.TagService;
 import com.epam.esm.service.exception.CreateEntityInternalException;
 import com.epam.esm.service.exception.UpdateEntityInternalException;
 import com.epam.esm.domain.dto.CertificateDTO;
@@ -19,24 +20,23 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 public class CertificateServiceImpl implements CertificateService {
 
     private final CertificateDao certificateDAO;
-    private final TagDao tagDao;
     private final ModelMapper modelMapper;
+    private final TagService tagService;
 
-    public CertificateServiceImpl(CertificateDao certificateDAO, TagDao tagDao, ModelMapper modelMapper) {
+    public CertificateServiceImpl(CertificateDao certificateDAO, ModelMapper modelMapper, TagService tagService) {
         this.certificateDAO = certificateDAO;
-        this.tagDao = tagDao;
         this.modelMapper = modelMapper;
+        this.tagService = tagService;
     }
 
     @Override
-    @Transactional
-    public CertificateDTO update(CertificateDTO dto) {
-        Certificate existing = certificateDAO.readById(dto.getId())
-                .orElseThrow(() -> new IdNotExistException(dto.getId().toString()));
-        updateFieldsFromDto(existing, dto);
+    public CertificateDTO update(CertificateDTO certificateDTO) {
+        Certificate existing = modelMapper.map(readById(certificateDTO.getId()), Certificate.class);
+        updateFieldsFromDto(existing, certificateDTO);
         existing = certificateDAO.update(existing).orElseThrow(UpdateEntityInternalException::new);
         return modelMapper.map(existing, CertificateDTO.class);
     }
@@ -50,24 +50,13 @@ public class CertificateServiceImpl implements CertificateService {
     }
 
     @Override
-    @Transactional
-    public CertificateDTO create(CertificateDTO dto) {
-        Certificate certificate = modelMapper.map(dto, Certificate.class);
-        // get tags or create new ones
-        List<Tag> tags = dto.getTags().stream()
-                .map(tagDTO ->
-                        tagDao.readByName(tagDTO.getName())
-                                .orElseGet(() -> tagDao.create(modelMapper.map(tagDTO, Tag.class))
-                                        .orElseThrow(CreateEntityInternalException::new))
-                )
-                .collect(Collectors.toList());
+    public CertificateDTO create(CertificateDTO certificateDTO) {
+        Certificate certificate = modelMapper.map(certificateDTO, Certificate.class);
+        List<Tag> tags = prepareCertificateTags(certificateDTO.getTags());
         certificate.setTags(tags);
-
-        // create certificate
         Certificate created = certificateDAO.create(certificate)
                 .orElseThrow(CreateEntityInternalException::new);
         return modelMapper.map(created, CertificateDTO.class);
-
     }
 
     @Override
@@ -86,9 +75,9 @@ public class CertificateServiceImpl implements CertificateService {
     }
 
     @Override
-    @Transactional
     public void deleteById(Long id) {
-        certificateDAO.deleteById(id);
+        Certificate certificate = certificateDAO.readById(id).orElseThrow(() -> new IdNotExistException(id.toString()));
+        certificateDAO.delete(certificate);
     }
 
     @Override
@@ -101,19 +90,32 @@ public class CertificateServiceImpl implements CertificateService {
         return certificateDAO.getEntitiesCount();
     }
 
+    private List<Tag> prepareCertificateTags(List<TagDTO> tagDTOList) {
+        return tagDTOList.stream()
+                .map(tagDTO -> modelMapper.map(getTagOrCreate(tagDTO), Tag.class))
+                .collect(Collectors.toList());
+    }
 
-    private void updateFieldsFromDto(Certificate existing, CertificateDTO dto) {
-        if (Objects.nonNull(dto.getName())) {
-            existing.setName(dto.getName());
+    private TagDTO getTagOrCreate(TagDTO tagDTO) {
+        try {
+            return tagService.readByName(tagDTO.getName());
+        } catch (IdNotExistException e) {
+            return tagService.create(tagDTO);
         }
-        if (Objects.nonNull(dto.getDescription())) {
-            existing.setDescription(dto.getDescription());
+    }
+
+    private void updateFieldsFromDto(Certificate existingCertificate, CertificateDTO certificateDTO) {
+        if (Objects.nonNull(certificateDTO.getName())) {
+            existingCertificate.setName(certificateDTO.getName());
         }
-        if (Objects.nonNull(dto.getPrice())) {
-            existing.setPrice(dto.getPrice());
+        if (Objects.nonNull(certificateDTO.getDescription())) {
+            existingCertificate.setDescription(certificateDTO.getDescription());
         }
-        if (Objects.nonNull((dto.getDuration()))) {
-            existing.setDuration(dto.getDuration());
+        if (Objects.nonNull(certificateDTO.getPrice())) {
+            existingCertificate.setPrice(certificateDTO.getPrice());
+        }
+        if (Objects.nonNull((certificateDTO.getDuration()))) {
+            existingCertificate.setDuration(certificateDTO.getDuration());
         }
     }
 }

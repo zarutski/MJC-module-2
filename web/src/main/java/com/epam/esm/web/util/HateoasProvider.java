@@ -36,6 +36,7 @@ public class HateoasProvider {
         certificateDTO.add(linkTo(methodOn(CertificateController.class).delete(certificateDTO.getId()))
                 .withRel(RELATION_DELETE)
                 .withType(HttpMethod.DELETE.name()));
+        addLinksToListTag(certificateDTO.getTags());
         return certificateDTO;
     }
 

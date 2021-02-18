@@ -1,7 +1,6 @@
 package com.epam.esm.dao.impl;
 
 import com.epam.esm.dao.TagDao;
-import com.epam.esm.dao.exception.EntityNotInDBException;
 import com.epam.esm.domain.entity.Certificate;
 import com.epam.esm.domain.entity.Order;
 import com.epam.esm.domain.entity.Tag;
@@ -9,40 +8,27 @@ import com.epam.esm.domain.entity.User;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
-import javax.persistence.criteria.*;
-import java.util.*;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Expression;
+import javax.persistence.criteria.ListJoin;
+import javax.persistence.criteria.Root;
+import java.util.Optional;
 
-import static com.epam.esm.dao.util.ParameterValue.*;
+import static com.epam.esm.dao.util.ParameterValue.PARAMETER_NAME;
+import static com.epam.esm.dao.util.ParameterValue.PARAMETER_TAG;
 
 @Repository
-public class TagDaoImpl implements TagDao {
+public class TagDaoImpl extends CommonOperationDao<Tag> implements TagDao {
 
     private static final String SELECT_BY_TAG_NAME = "select tag From Tag tag where tag.name=:name";
     private static final String ATTRIBUTE_ORDER_LIST = "orderList";
-    private static final String ATTRIBUTE_CERTIFICATE_LIST = "giftCertificateList";
+    private static final String ATTRIBUTE_CERTIFICATE_LIST = "certificateList";
     private static final String COLUMN_ID = "id";
 
-    private final EntityManager entityManager;
-
     public TagDaoImpl(EntityManager entityManager) {
+        super(entityManager, Tag.class);
         this.entityManager = entityManager;
-    }
-
-    @Override
-    public Optional<Tag> readById(final Long tagId) {
-        return Optional.ofNullable(entityManager.find(Tag.class, tagId));
-    }
-
-    @Override
-    public List<Tag> readAll(int page, int size) {
-        CriteriaQuery<Tag> query = entityManager.getCriteriaBuilder().createQuery(Tag.class);
-        Root<Tag> root = query.from(Tag.class);
-        query.select(root);
-        int startPosition = (page - INT_VALUE_OFFSET) * size;
-        return entityManager.createQuery(query)
-                .setFirstResult(startPosition)
-                .setMaxResults(size)
-                .getResultList();
     }
 
     @Override
@@ -52,30 +38,16 @@ public class TagDaoImpl implements TagDao {
     }
 
     @Override
-    public void deleteById(final Long tagId) {
-        Tag tag = entityManager.find(Tag.class, tagId);
-        if (entityManager.contains(tag)) {
-            entityManager.remove(tag);
-        } else {
-            throw new EntityNotInDBException(tagId.toString());
-        }
+    public void delete(Tag tag) {
+        entityManager.remove(tag);
     }
 
     @Override
     public Optional<Tag> readByName(String name) {
-        return Optional.of(entityManager.createQuery(SELECT_BY_TAG_NAME, Tag.class)
+        return entityManager.createQuery(SELECT_BY_TAG_NAME, Tag.class)
                 .setParameter(PARAMETER_NAME, name)
                 .getResultStream()
-                .findFirst()
-                .orElseThrow(() -> new EntityNotInDBException(name)));
-    }
-
-    @Override
-    public Long getEntitiesCount() {
-        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-        CriteriaQuery<Long> query = builder.createQuery(Long.class);
-        query.select(builder.count(query.from(Tag.class)));
-        return entityManager.createQuery(query).getSingleResult();
+                .findFirst();
     }
 
     @Override

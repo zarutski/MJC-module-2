@@ -2,7 +2,6 @@ package com.epam.esm.service.impl;
 
 import com.epam.esm.dao.UserDao;
 import com.epam.esm.domain.dto.UserDTO;
-import com.epam.esm.domain.entity.User;
 import com.epam.esm.service.UserService;
 import com.epam.esm.service.exception.IdNotExistException;
 import org.modelmapper.ModelMapper;
@@ -10,15 +9,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 @Transactional
 public class UserServiceImpl implements UserService {
 
-    UserDao userDao;
-    ModelMapper modelMapper;
+    private final UserDao userDao;
+    private final ModelMapper modelMapper;
 
     public UserServiceImpl(UserDao userDao, ModelMapper modelMapper) {
         this.userDao = userDao;
@@ -27,12 +25,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDTO readById(Long id) {
-        Optional<User> user = userDao.readById(id);
-        if (user.isPresent()) {
-            return modelMapper.map(user.get(), UserDTO.class);
-        } else {
-            throw new IdNotExistException(id.toString());
-        }
+        return userDao.readById(id)
+                .map(user -> modelMapper.map(user, UserDTO.class))
+                .orElseThrow(() -> new IdNotExistException(id.toString()));
     }
 
     @Override
@@ -45,6 +40,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public Long getEntitiesCount() {
         return userDao.getEntitiesCount();
+    }
+
+    @Override
+    public Long getUserIdWithOrdersHighestCost() {
+        return userDao.getUserIdWithOrdersHighestCost();
     }
 
 }

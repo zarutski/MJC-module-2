@@ -1,7 +1,7 @@
 package com.epam.esm.domain.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -23,6 +23,6 @@ public class OrderDTO extends RepresentationModel<OrderDTO> {
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
     private LocalDateTime date;
     private Long userId;
-    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    @JsonIgnoreProperties(value = {"description", "duration", "createDate", "lastUpdateDate", "tags"})
     private List<CertificateDTO> certificateList;
 }
