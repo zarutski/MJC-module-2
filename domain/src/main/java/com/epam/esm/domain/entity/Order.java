@@ -48,5 +48,5 @@ public class Order {
             joinColumns = @JoinColumn(name = "orders_id", nullable = false),
             inverseJoinColumns = @JoinColumn(name = "gift_certificate_id", nullable = false)
     )
-    private List<Certificate> certificateList;
+    private List<Certificate> certificates;
 }

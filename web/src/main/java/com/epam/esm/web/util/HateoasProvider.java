@@ -5,7 +5,6 @@ import com.epam.esm.domain.dto.OrderDTO;
 import com.epam.esm.domain.dto.TagDTO;
 import com.epam.esm.domain.dto.UserDTO;
 import com.epam.esm.web.controller.CertificateController;
-import com.epam.esm.web.controller.OrderController;
 import com.epam.esm.web.controller.TagController;
 import com.epam.esm.web.controller.UserController;
 import org.springframework.http.HttpMethod;
@@ -30,7 +29,7 @@ public class HateoasProvider {
     private static final int SIZE = 4;
 
     public CertificateDTO addLinksToCertificate(CertificateDTO certificateDTO) {
-        certificateDTO.add(linkTo(methodOn(CertificateController.class).update(certificateDTO))
+        certificateDTO.add(linkTo(methodOn(CertificateController.class).update(certificateDTO, certificateDTO.getId()))
                 .withRel(RELATION_UPDATE)
                 .withType(HttpMethod.PUT.name()));
         certificateDTO.add(linkTo(methodOn(CertificateController.class).delete(certificateDTO.getId()))
@@ -66,7 +65,7 @@ public class HateoasProvider {
     }
 
     public UserDTO addLinksToUser(UserDTO user) {
-        user.add(linkTo(methodOn(OrderController.class).readByUserId(user.getId(), PAGE, SIZE))
+        user.add(linkTo(methodOn(UserController.class).readByUserId(user.getId(), PAGE, SIZE))
                 .withRel(RELATION_ALL_USER_ORDERS)
                 .withType(HttpMethod.GET.name()));
         return user;
@@ -79,7 +78,7 @@ public class HateoasProvider {
     }
 
     public OrderDTO addLinksToOrder(OrderDTO orderDto) {
-        addLinksToListCertificate(orderDto.getCertificateList());
+        addLinksToListCertificate(orderDto.getCertificates());
         orderDto.add(linkTo(methodOn(UserController.class).read(orderDto.getUserId()))
                 .withRel(RELATION_USER)
                 .withType(HttpMethod.GET.name()));
@@ -89,10 +88,13 @@ public class HateoasProvider {
 
     public void addLinksToOrderList(List<OrderDTO> orderDtoList) {
         orderDtoList.forEach(orderDto -> {
-            orderDto.add(linkTo(methodOn(OrderController.class).readByUserId(orderDto.getUserId(), PAGE, SIZE))
+            orderDto.add(linkTo(methodOn(UserController.class).readByUserId(orderDto.getUserId(), PAGE, SIZE))
                     .withRel(RELATION_USER_ORDERS)
                     .withType(HttpMethod.GET.name()));
-            addLinksToListCertificate(orderDto.getCertificateList());
+            addLinksToListCertificate(orderDto.getCertificates());
+            orderDto.add(linkTo(methodOn(UserController.class).readOrder(orderDto.getId()))
+                    .withSelfRel()
+                    .withType(HttpMethod.GET.name()));
             orderDto.add(linkTo(methodOn(UserController.class).read(orderDto.getUserId()))
                     .withRel(RELATION_USER)
                     .withType(HttpMethod.GET.name()));

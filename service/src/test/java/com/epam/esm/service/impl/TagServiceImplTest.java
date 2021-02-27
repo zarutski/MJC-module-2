@@ -1,7 +1,6 @@
 package com.epam.esm.service.impl;
 
 import com.epam.esm.dao.TagDao;
-import com.epam.esm.service.UserService;
 import com.epam.esm.service.exception.CreateEntityInternalException;
 import com.epam.esm.domain.dto.TagDTO;
 import com.epam.esm.domain.entity.Tag;
@@ -29,8 +28,6 @@ public class TagServiceImplTest {
     private TagDao tagDao;
     @Mock
     private ModelMapper modelMapper;
-    @Mock
-    private UserService userService;
     @InjectMocks
     private TagServiceImpl tagService;
 
@@ -112,8 +109,7 @@ public class TagServiceImplTest {
         TagDTO tagDTO = new TagDTO();
         Tag tag = new Tag();
 
-        when(userService.getUserIdWithOrdersHighestCost()).thenReturn(RECORD_ID);
-        when(tagDao.getMostUsedUserTag(RECORD_ID)).thenReturn(Optional.of(tag));
+        when(tagDao.getMostUsedTagFromUserWithOrdersHighestCost()).thenReturn(Optional.of(tag));
         when(modelMapper.map(tag, TagDTO.class)).thenReturn(tagDTO);
 
         assertEquals(tagDTO, tagService.getMostUsedTagFromUserWithOrdersHighestCost());
@@ -121,8 +117,7 @@ public class TagServiceImplTest {
 
     @Test
     void getMostUsedTagNegative() {
-        when(userService.getUserIdWithOrdersHighestCost()).thenReturn(RECORD_ID);
-        when(tagDao.getMostUsedUserTag(RECORD_ID)).thenReturn(Optional.empty());
+        when(tagDao.getMostUsedTagFromUserWithOrdersHighestCost()).thenReturn(Optional.empty());
         assertThrows(IdNotExistException.class, () -> tagService.getMostUsedTagFromUserWithOrdersHighestCost());
     }
 

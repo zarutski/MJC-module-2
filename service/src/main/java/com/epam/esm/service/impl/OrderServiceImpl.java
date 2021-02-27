@@ -95,7 +95,7 @@ public class OrderServiceImpl implements OrderService {
         order.setUserId(userId);
         BigDecimal cost = certificates.stream().map(Certificate::getPrice).reduce(BigDecimal.ZERO, BigDecimal::add);
         order.setCost(cost);
-        order.setCertificateList(certificates);
+        order.setCertificates(certificates);
         return order;
     }
 }

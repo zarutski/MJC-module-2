@@ -1,7 +1,6 @@
 package com.epam.esm.service.impl;
 
 import com.epam.esm.dao.TagDao;
-import com.epam.esm.service.UserService;
 import com.epam.esm.service.exception.CreateEntityInternalException;
 import com.epam.esm.domain.dto.TagDTO;
 import com.epam.esm.domain.entity.Tag;
@@ -19,12 +18,10 @@ import java.util.stream.Collectors;
 public class TagServiceImpl implements TagService {
 
     private final TagDao tagDao;
-    private final UserService userService;
     private final ModelMapper modelMapper;
 
-    public TagServiceImpl(TagDao tagDao, UserService userService, ModelMapper modelMapper) {
+    public TagServiceImpl(TagDao tagDao, ModelMapper modelMapper) {
         this.tagDao = tagDao;
-        this.userService = userService;
         this.modelMapper = modelMapper;
     }
 
@@ -69,8 +66,8 @@ public class TagServiceImpl implements TagService {
 
     @Override
     public TagDTO getMostUsedTagFromUserWithOrdersHighestCost() {
-        Long userId = userService.getUserIdWithOrdersHighestCost();
-        Tag tag = tagDao.getMostUsedUserTag(userId).orElseThrow(() -> new IdNotExistException(userId.toString()));
+        Tag tag = tagDao.getMostUsedTagFromUserWithOrdersHighestCost()
+                .orElseThrow(IdNotExistException::new);
         return modelMapper.map(tag, TagDTO.class);
     }
 }

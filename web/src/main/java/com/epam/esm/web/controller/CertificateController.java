@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.constraints.Min;
+import javax.validation.constraints.Size;
 import java.util.List;
 
 /**
@@ -65,16 +66,25 @@ public class CertificateController {
     /**
      * Gets all certificates with tags matching search parameters in defined order.
      *
-     * @param page            number of the displayed page
-     * @param size            count of records displayed per page
-     * @param searchParameter parameter for certificate search
+     * @param name        is a part or a full name of the searched certificate
+     * @param description is a part of certificate's description
+     * @param tagNames    is a list of tag names of the searched certificate
+     * @param sortBy      sort type
+     * @param order       order type
+     * @param page        number of the displayed page
+     * @param size        count of records displayed per page
      * @return List of certificates found
      */
     @GetMapping("/search")
     public PagedModel<CertificateDTO> searchByParameters(
+            @RequestParam(value = "name", required = false) @Size(min = 2, max = 45) String name,
+            @RequestParam(value = "description", required = false) @Size(min = 3, max = 45) String description,
+            @RequestParam(value = "tag-name", required = false) List<String> tagNames,
+            @RequestParam(value = "sort-by", required = false) String sortBy,
+            @RequestParam(value = "order", required = false) String order,
             @RequestParam(value = "page", required = false, defaultValue = "1") @Min(1) int page,
-            @RequestParam(value = "size", required = false, defaultValue = "4") @Min(1) int size,
-            @RequestBody SearchParameter searchParameter) {
+            @RequestParam(value = "size", required = false, defaultValue = "4") @Min(1) int size) {
+        SearchParameter searchParameter = formSearchParameter(name, description, tagNames, sortBy, order);
         List<CertificateDTO> certificateList = certificateService.searchByParameters(searchParameter, page, size);
         hateoas.addLinksToListCertificate(certificateList);
         return pagination
@@ -107,11 +117,14 @@ public class CertificateController {
     /**
      * Updates certificate using id and update info from request body
      *
-     * @param certificate parameter containing update info
+     * @param certificate certificate parameter containing update info
+     * @param id          of the certificate that needs to be updated
      * @return {@code CertificateDTO} object for updated certificate
      */
-    @PutMapping
-    public CertificateDTO update(@Validated(UpdateGroup.class) @RequestBody CertificateDTO certificate) {
+    @PutMapping("/{id}")
+    public CertificateDTO update(@Validated(UpdateGroup.class) @RequestBody CertificateDTO certificate,
+                                 @PathVariable @Min(1) Long id) {
+        certificate.setId(id);
         return hateoas.addLinksToCertificate(certificateService.update(certificate));
     }
 
@@ -125,5 +138,16 @@ public class CertificateController {
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         certificateService.deleteById(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    private SearchParameter formSearchParameter(String name, String description, List<String> tagNames,
+                                                String sortBy, String order) {
+        SearchParameter searchParameter = new SearchParameter();
+        searchParameter.setName(name);
+        searchParameter.setDescription(description);
+        searchParameter.setTagNames(tagNames);
+        searchParameter.setSortBy(sortBy);
+        searchParameter.setOrder(order);
+        return searchParameter;
     }
 }

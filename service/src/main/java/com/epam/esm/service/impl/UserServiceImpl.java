@@ -42,9 +42,4 @@ public class UserServiceImpl implements UserService {
         return userDao.getEntitiesCount();
     }
 
-    @Override
-    public Long getUserIdWithOrdersHighestCost() {
-        return userDao.getUserIdWithOrdersHighestCost();
-    }
-
 }

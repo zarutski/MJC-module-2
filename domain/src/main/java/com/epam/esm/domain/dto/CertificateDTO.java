@@ -27,8 +27,7 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 public class CertificateDTO extends RepresentationModel<CertificateDTO> {
 
-    @Null(groups = CreateGroup.class)
-    @NotNull(groups = UpdateGroup.class)
+    @Null(groups = {CreateGroup.class, UpdateGroup.class})
     private Long id;
     @NotEmpty(groups = CreateGroup.class)
     @Size(min = 3, max = 45, groups = {CreateGroup.class, UpdateGroup.class})

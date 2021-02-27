@@ -1,30 +1,26 @@
 package com.epam.esm.dao.impl;
 
 import com.epam.esm.dao.TagDao;
-import com.epam.esm.domain.entity.Certificate;
-import com.epam.esm.domain.entity.Order;
 import com.epam.esm.domain.entity.Tag;
-import com.epam.esm.domain.entity.User;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Expression;
-import javax.persistence.criteria.ListJoin;
-import javax.persistence.criteria.Root;
+import javax.persistence.Query;
 import java.util.Optional;
 
 import static com.epam.esm.dao.util.ParameterValue.PARAMETER_NAME;
-import static com.epam.esm.dao.util.ParameterValue.PARAMETER_TAG;
 
 @Repository
 public class TagDaoImpl extends CommonOperationDao<Tag> implements TagDao {
 
     private static final String SELECT_BY_TAG_NAME = "select tag From Tag tag where tag.name=:name";
-    private static final String ATTRIBUTE_ORDER_LIST = "orderList";
-    private static final String ATTRIBUTE_CERTIFICATE_LIST = "certificateList";
-    private static final String COLUMN_ID = "id";
+    private static final String SELECT_MOST_USED_TAG_OF_USER_WITH_HIGHEST_COST = "SELECT t.id, t.name FROM orders AS o " +
+            "INNER JOIN gift_certificate_has_orders as gho ON gho.orders_id=o.id " +
+            "INNER JOIN gift_certificate_has_tag AS ght ON gho.gift_certificate_id=ght.gift_certificate_id " +
+            "INNER JOIN tag AS t ON ght.tag_id=t.id " +
+            "WHERE o.user_id = (SELECT user_id FROM orders AS o GROUP by o.user_id order by sum(o.cost) DESC LIMIT 1) " +
+            "GROUP BY t.id " +
+            "ORDER BY count(*) DESC LIMIT 1";
 
     public TagDaoImpl(EntityManager entityManager) {
         super(entityManager, Tag.class);
@@ -51,21 +47,8 @@ public class TagDaoImpl extends CommonOperationDao<Tag> implements TagDao {
     }
 
     @Override
-    public Optional<Tag> getMostUsedUserTag(Long userID) {
-        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-        CriteriaQuery<Tag> tagQuery = criteriaBuilder.createQuery(Tag.class);
-        Root<User> userRoot = tagQuery.from(User.class);
-
-        ListJoin<User, Order> orderList = userRoot.joinList(ATTRIBUTE_ORDER_LIST);
-        ListJoin<Order, Certificate> giftList = orderList.joinList(ATTRIBUTE_CERTIFICATE_LIST);
-        ListJoin<Certificate, Tag> tagList = giftList.joinList(PARAMETER_TAG);
-
-        Expression orderID = tagList.get(COLUMN_ID);
-        tagQuery.select(tagList)
-                .where(criteriaBuilder.equal(userRoot.get(COLUMN_ID), userID))
-                .groupBy(orderID)
-                .orderBy(criteriaBuilder.desc(criteriaBuilder.count(orderID)));
-
-        return Optional.of(entityManager.createQuery(tagQuery).setMaxResults(1).getSingleResult());
+    public Optional<Tag> getMostUsedTagFromUserWithOrdersHighestCost() {
+        Query nativeQuery = entityManager.createNativeQuery(SELECT_MOST_USED_TAG_OF_USER_WITH_HIGHEST_COST, Tag.class);
+        return Optional.of((Tag) nativeQuery.getSingleResult());
     }
 }

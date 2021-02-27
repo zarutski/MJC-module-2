@@ -53,9 +53,9 @@ public class OrderDaoImpl extends CommonOperationDao<Order> implements OrderDao 
     }
 
     private void associateWithContext(Order order) {
-        List<Certificate> detached = order.getCertificateList();
+        List<Certificate> detached = order.getCertificates();
         List<Certificate> associated = associateAndGet(detached);
-        order.setCertificateList(associated);
+        order.setCertificates(associated);
     }
 
     private List<Certificate> associateAndGet(List<Certificate> detached) {

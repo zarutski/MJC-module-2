@@ -24,5 +24,5 @@ public class OrderDTO extends RepresentationModel<OrderDTO> {
     private LocalDateTime date;
     private Long userId;
     @JsonIgnoreProperties(value = {"description", "duration", "createDate", "lastUpdateDate", "tags"})
-    private List<CertificateDTO> certificateList;
+    private List<CertificateDTO> certificates;
 }

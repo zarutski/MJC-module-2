@@ -99,7 +99,7 @@ public class OrderServiceImplTest {
         userDTO.setId(RECORD_ID);
         Order order = new Order();
         order.setUserId(RECORD_ID);
-        order.setCertificateList(new ArrayList<>());
+        order.setCertificates(new ArrayList<>());
         order.setCost(BigDecimal.ZERO);
         CreateOrderDTO createOrderDTO = new CreateOrderDTO();
         createOrderDTO.setUserId(RECORD_ID);

@@ -92,7 +92,7 @@ public class APIExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleViolationException(javax.validation.ConstraintViolationException exception) {
-        return getErrorResponse(KEY_DATA_FORMAT, CODE_DATA_FORMAT,
+        return getErrorResponse(KEY_DATA_FORMAT, CODE_BAD_REQUEST,
                 exception.getMessage());
     }
 

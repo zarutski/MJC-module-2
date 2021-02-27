@@ -12,6 +12,4 @@ public interface UserService {
 
     Long getEntitiesCount();
 
-    Long getUserIdWithOrdersHighestCost();
-
 }
