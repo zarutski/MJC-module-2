@@ -1,7 +1,11 @@
 package com.epam.esm.dao.parameters;
 
+import com.epam.esm.domain.entity.Certificate;
+import com.epam.esm.domain.util.SearchParameter;
+
+import javax.persistence.criteria.CriteriaQuery;
+
 public interface SearchQueryProvider {
 
-    String getCertificateSearchQuery(String tagName, String certificateName, String description, String sortBy, String order);
-
+    CriteriaQuery<Certificate> buildQuery(SearchParameter parameter);
 }

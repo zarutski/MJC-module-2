@@ -12,5 +12,4 @@ public class IdNotExistException extends RuntimeException {
     public IdNotExistException(String message, Throwable cause) {
         super(message, cause);
     }
-
 }
