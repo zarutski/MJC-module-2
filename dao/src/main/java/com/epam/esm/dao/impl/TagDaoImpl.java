@@ -24,7 +24,6 @@ public class TagDaoImpl extends CommonOperationDao<Tag> implements TagDao {
 
     public TagDaoImpl(EntityManager entityManager) {
         super(entityManager, Tag.class);
-        this.entityManager = entityManager;
     }
 
     @Override

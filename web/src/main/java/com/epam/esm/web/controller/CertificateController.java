@@ -10,6 +10,7 @@ import com.epam.esm.web.util.PaginationProvider;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -110,6 +111,7 @@ public class CertificateController {
      */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public CertificateDTO create(@Validated(CreateGroup.class) @RequestBody CertificateDTO certificate) {
         return hateoas.addLinksToCertificate(certificateService.create(certificate));
     }
@@ -122,6 +124,7 @@ public class CertificateController {
      * @return {@code CertificateDTO} object for updated certificate
      */
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public CertificateDTO update(@Validated(UpdateGroup.class) @RequestBody CertificateDTO certificate,
                                  @PathVariable @Min(1) Long id) {
         certificate.setId(id);
@@ -135,6 +138,7 @@ public class CertificateController {
      * @return empty response body
      */
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         certificateService.deleteById(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
