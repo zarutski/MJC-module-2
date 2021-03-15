@@ -4,6 +4,7 @@ import com.epam.esm.dao.UserDao;
 import com.epam.esm.domain.dto.RoleDTO;
 import com.epam.esm.domain.dto.UserDTO;
 import com.epam.esm.domain.entity.User;
+import com.epam.esm.service.exception.UserAlreadyExists;
 import com.epam.esm.service.util.registration.RegistrationProvider;
 import com.epam.esm.service.RoleService;
 import com.epam.esm.service.UserService;
@@ -21,7 +22,6 @@ import java.util.stream.Collectors;
 @Transactional
 public class UserServiceImpl implements UserService {
 
-    private static final String ALREADY_EXISTS = "user already exists: ";
     private static final Long ROLE_USER_ID = 1L;
 
     private final UserDao userDao;
@@ -69,7 +69,7 @@ public class UserServiceImpl implements UserService {
     public UserDTO create(UserDTO userDto) {
         String login = userDto.getLogin();
         if (userDao.findByLogin(login).isPresent()) {
-            throw new CreateEntityInternalException(ALREADY_EXISTS + login);
+            throw new UserAlreadyExists(login);
         }
         User user = prepareUser(userDto);
         User createdUser = userDao.create(user)
