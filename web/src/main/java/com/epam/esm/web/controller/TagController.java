@@ -8,6 +8,7 @@ import com.epam.esm.web.util.PaginationProvider;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -50,6 +51,7 @@ public class TagController {
      */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public TagDTO createTag(@Validated(CreateGroup.class) @RequestBody TagDTO tag) {
         return hateoas.addLinksToTag(tagService.create(tag));
     }
@@ -87,6 +89,7 @@ public class TagController {
      * @return empty response body
      */
     @DeleteMapping(value = "/{id}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         tagService.deleteById(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -98,6 +101,7 @@ public class TagController {
      * @return most widely used tag
      */
     @GetMapping("/mostUsedTag")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public TagDTO getMostUsedTagFromUserWithOrdersHighestCost() {
         return hateoas.addLinksToTag(tagService.getMostUsedTagFromUserWithOrdersHighestCost());
     }

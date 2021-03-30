@@ -19,4 +19,6 @@ public interface OrderService {
 
     Long getEntitiesCount();
 
+    OrderDTO readUserOrder(Long userId, Long orderId);
+
 }

@@ -78,6 +78,14 @@ public class OrderServiceImpl implements OrderService {
         return orderDao.getEntitiesCount();
     }
 
+    @Override
+    public OrderDTO readUserOrder(Long userId, Long orderId) {
+        userId = getExistingUserId(userId);
+        Order order =  orderDao.readUserOrder(userId, orderId)
+                .orElseThrow(() -> new IdNotExistException(orderId.toString()));
+        return modelMapper.map(order, OrderDTO.class);
+    }
+
     private Long getExistingUserId(Long userId) {
         UserDTO existing = userService.readById(userId);
         return existing.getId();

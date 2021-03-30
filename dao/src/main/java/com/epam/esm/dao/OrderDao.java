@@ -13,4 +13,6 @@ public interface OrderDao extends CommonOperation<Order> {
 
     Long getUserOrderCount(Long userId);
 
+    Optional<Order> readUserOrder(Long userId, Long orderId);
+
 }

@@ -12,4 +12,8 @@ public interface UserService {
 
     Long getEntitiesCount();
 
+    UserDTO findByLogin(String login);
+
+    UserDTO create(UserDTO user);
+
 }

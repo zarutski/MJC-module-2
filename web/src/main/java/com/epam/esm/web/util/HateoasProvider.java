@@ -92,7 +92,7 @@ public class HateoasProvider {
                     .withRel(RELATION_USER_ORDERS)
                     .withType(HttpMethod.GET.name()));
             addLinksToListCertificate(orderDto.getCertificates());
-            orderDto.add(linkTo(methodOn(UserController.class).readOrder(orderDto.getId()))
+            orderDto.add(linkTo(methodOn(UserController.class).readOrder(orderDto.getUserId(), orderDto.getId()))
                     .withSelfRel()
                     .withType(HttpMethod.GET.name()));
             orderDto.add(linkTo(methodOn(UserController.class).read(orderDto.getUserId()))
