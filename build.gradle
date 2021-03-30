@@ -1,8 +1,6 @@
 group 'com.epam.esm'
 version '1.0'
 
-apply plugin: 'war'
-
 subprojects {
     apply plugin: 'java-library'
 
@@ -14,9 +12,4 @@ subprojects {
     repositories {
         mavenCentral()
     }
-
-}
-
-war {
-    enabled = true
 }
