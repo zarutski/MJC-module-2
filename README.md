@@ -3,10 +3,10 @@ Advanced REST + Spring Security + non-executable WAR for Jenkins + SonarQube int
 
 # Jenkins Credentials
 
-1. Admin
-login: admin
+1. Admin  
+login: admin  
 password: b3bb8cf453fb40e7b6c38112d764d7a5
 
-2. User
-login: user
+2. User  
+login: user  
 password: b5bfb40e7b6c38112b8cf453d764d7a3
