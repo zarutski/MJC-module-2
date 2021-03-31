@@ -1,8 +1,14 @@
+plugins {
+    id 'groovy'
+    id 'application'
+}
+
 group 'com.epam.esm'
 version '1.0'
 
 subprojects {
     apply plugin: 'java-library'
+    apply plugin: 'jacoco'
 
     sourceCompatibility = JavaVersion.VERSION_1_8
     targetCompatibility = JavaVersion.VERSION_1_8
@@ -12,8 +18,6 @@ subprojects {
     repositories {
         mavenCentral()
     }
-
-    apply plugin: 'jacoco'
 
     jacocoTestCoverageVerification {
         violationRules {
@@ -25,7 +29,12 @@ subprojects {
         }
     }
 
+    jacocoTestReport {
+        reports {
+            xml.enabled true
+        }
+    }
+
     check.dependsOn jacocoTestCoverageVerification
     jacocoTestCoverageVerification.dependsOn jacocoTestReport
 }
-
