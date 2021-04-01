@@ -31,6 +31,8 @@ public class TagServiceImplTest {
     @InjectMocks
     private TagServiceImpl tagService;
 
+    private static final String TAG_NAME = "tag name";
+    private static final Long ENTITIES_COUNT = 2L;
     private static final Integer PAGE_NUMBER = 1;
     private static final Integer RECORDS_PER_PAGE = 3;
     private static final Long RECORD_ID = 1L;
@@ -81,6 +83,28 @@ public class TagServiceImplTest {
     void readByIdNegative() {
         when(tagDao.readById(RECORD_ID)).thenReturn(Optional.empty());
         assertThrows(IdNotExistException.class, () -> tagService.readById(RECORD_ID));
+    }
+
+    @Test
+    void readByNamePositive() {
+        TagDTO tagDTO = new TagDTO();
+        Tag tag = new Tag();
+
+        when(modelMapper.map(tag, TagDTO.class)).thenReturn(tagDTO);
+        when(tagDao.readByName(TAG_NAME)).thenReturn(Optional.of(tag));
+        assertEquals(tagDTO, tagService.readByName(TAG_NAME));
+    }
+
+    @Test
+    void readByNameNegative() {
+        when(tagDao.readByName(TAG_NAME)).thenReturn(Optional.empty());
+        assertThrows(IdNotExistException.class, () -> tagService.readByName(TAG_NAME));
+    }
+
+    @Test
+    void getEntitiesCount() {
+        when(tagDao.getEntitiesCount()).thenReturn(ENTITIES_COUNT);
+        assertEquals(ENTITIES_COUNT, tagService.getEntitiesCount());
     }
 
     @Test

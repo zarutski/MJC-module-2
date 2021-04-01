@@ -123,6 +123,24 @@ public class OrderServiceImplTest {
         assertThrows(CreateEntityInternalException.class, () -> orderService.create(createOrderDTO));
     }
 
+    @Test
+    void readUserOrder() {
+        OrderDTO orderDTO = new OrderDTO();
+        UserDTO userDTO = new UserDTO();
+        userDTO.setId(RECORD_ID);
+        Order order = new Order();
+
+        when(userService.readById(RECORD_ID)).thenReturn(userDTO);
+        when(orderDao.readUserOrder(RECORD_ID, RECORD_ID)).thenReturn(Optional.of(order));
+        when(modelMapper.map(order, OrderDTO.class)).thenReturn(orderDTO);
+        assertEquals(orderDTO, orderService.readUserOrder(RECORD_ID, RECORD_ID));
+    }
+
+    @Test
+    void getEntitiesCount() {
+        when(orderDao.getEntitiesCount()).thenReturn(ENTITIES_COUNT);
+        assertEquals(ENTITIES_COUNT, orderService.getEntitiesCount());
+    }
 
     @Test
     void getUserOrderCount() {
