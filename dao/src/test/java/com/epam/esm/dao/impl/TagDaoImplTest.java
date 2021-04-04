@@ -24,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @Transactional
 class TagDaoImplTest {
 
-    private static final Long FIRST_ID = 1L;
+    private static final Long RECORD_ID = 1L;
     private static final String DB_TAG_NAME = "abdullah";
     private static final String DB_TAG_NAME_NEW = "cart";
 
@@ -60,7 +60,7 @@ class TagDaoImplTest {
 
     private Tag createDBIdentityTag() {
         Tag tag = new Tag();
-        tag.setId(FIRST_ID);
+        tag.setId(RECORD_ID);
         tag.setName(DB_TAG_NAME);
         return tag;
     }
