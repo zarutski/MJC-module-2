@@ -63,7 +63,7 @@ public class AuthenticationController {
      * @return response with login and token generated for authenticated user
      */
     @PostMapping("/login")
-    public ResponseEntity<?> auth(@Validated @RequestBody AuthenticationDTO authenticationDTO) {
+    public ResponseEntity<Object> auth(@Validated @RequestBody AuthenticationDTO authenticationDTO) {
         String token = getAuthenticationToken(authenticationDTO);
         return buildResponse(authenticationDTO.getLogin(), token);
     }
@@ -80,7 +80,7 @@ public class AuthenticationController {
         return jwtProvider.createToken(login, user.getRole().getName());
     }
 
-    private ResponseEntity<?> buildResponse(String login, String token) {
+    private ResponseEntity<Object> buildResponse(String login, String token) {
         Map<Object, Object> response = new HashMap<>();
         response.put(KEY_LOGIN, login);
         response.put(KEY_TOKEN, token);
