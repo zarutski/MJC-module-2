@@ -26,7 +26,7 @@ public class JwtProvider {
     private static final String CLAIM_KEY_ROLE = "role";
     private static final String JWT_EXCEPTION_MESSAGE = "JWT token is expired or invalid: ";
 
-    @Value("${jwt.secret}")
+    @Value("${keycloak.credentials.secret}")
     private String secretKey;
     @Value("${jwt.header}")
     private String authorizationHeader;

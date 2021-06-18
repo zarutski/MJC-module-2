@@ -3,6 +3,7 @@ package com.epam.esm.web.exception;
 import com.epam.esm.service.exception.CreateEntityInternalException;
 import com.epam.esm.service.exception.UpdateEntityInternalException;
 import com.epam.esm.service.exception.IdNotExistException;
+import com.epam.esm.service.exception.UserAlreadyExists;
 import com.mysql.cj.jdbc.exceptions.MysqlDataTruncation;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.TypeMismatchException;
@@ -30,6 +31,8 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static com.epam.esm.web.util.SecurityValue.MESSAGE_EMPTY;
+
 @ControllerAdvice
 public class APIExceptionHandler extends ResponseEntityExceptionHandler {
 
@@ -39,6 +42,7 @@ public class APIExceptionHandler extends ResponseEntityExceptionHandler {
     private static final int CODE_WRONG_ID = 40402;
     private static final int CODE_NOT_ALLOWED = 40501;
     private static final int CODE_CONSTRAINT_VIOLATION = 40901;
+    private static final int CODE_ALREADY_EXISTS = 40902;
     private static final int CODE_MEDIA_NOT_SUPPORTED = 41501;
     private static final int CODE_DATA_FORMAT = 42201;
     private static final int CODE_TYPE_MISMATCH = 42202;
@@ -51,6 +55,7 @@ public class APIExceptionHandler extends ResponseEntityExceptionHandler {
     private static final String KEY_WRONG_ID = "wrong_resource_id";
     private static final String KEY_NOT_ALLOWED = "method_not_allowed";
     private static final String KEY_CONSTRAINT_VIOLATION = "conflict";
+    private static final String KEY_ALREADY_EXISTS = "already_exists";
     private static final String KEY_MEDIA_NOT_SUPPORTED = "media_not_supported";
     private static final String KEY_DATA_FORMAT = "wrong_data_format";
     private static final String KEY_TYPE_MISMATCH = "type_mismatch";
@@ -58,7 +63,6 @@ public class APIExceptionHandler extends ResponseEntityExceptionHandler {
     private static final String UPDATE_INTERNAL_ERROR = "update_internal";
 
     private static final String VALUES_DELIMITER = " = ";
-    private static final String MESSAGE_EMPTY = "";
 
     private final ReloadableResourceBundleMessageSource resourceBundle;
 
@@ -86,6 +90,13 @@ public class APIExceptionHandler extends ResponseEntityExceptionHandler {
     public ErrorResponse handleConstraintViolationException(ConstraintViolationException exception) {
         return getErrorResponse(KEY_CONSTRAINT_VIOLATION, CODE_CONSTRAINT_VIOLATION,
                 exception.getErrorCode() + MESSAGE_EMPTY);
+    }
+
+    @ResponseBody
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ErrorResponse handleCreateEntityInternalException(UserAlreadyExists exception) {
+        return getErrorResponse(KEY_ALREADY_EXISTS, CODE_ALREADY_EXISTS, exception.getMessage());
     }
 
     @ResponseBody

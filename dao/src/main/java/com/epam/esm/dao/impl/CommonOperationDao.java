@@ -14,7 +14,7 @@ public abstract class CommonOperationDao<T> {
 
     protected EntityManager entityManager;
 
-    public CommonOperationDao(EntityManager entityManager, Class<T> clazz) {
+    protected CommonOperationDao(EntityManager entityManager, Class<T> clazz) {
         this.entityManager = entityManager;
         this.clazz = clazz;
     }

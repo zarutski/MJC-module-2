@@ -72,9 +72,9 @@ public class KeycloakRegistrationProvider implements RegistrationProvider {
 
     private List<RoleRepresentation> rolesToAdd() {
         RoleRepresentation roleRepresentation = realmResource.roles().get(REALM_ROLE_USER).toRepresentation();
-        List<RoleRepresentation> rolesToAdd = new ArrayList<>();
-        rolesToAdd.add(roleRepresentation);
-        return rolesToAdd;
+        List<RoleRepresentation> roles = new ArrayList<>();
+        roles.add(roleRepresentation);
+        return roles;
     }
 
 }

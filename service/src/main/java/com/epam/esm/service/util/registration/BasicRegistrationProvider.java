@@ -10,5 +10,6 @@ public class BasicRegistrationProvider implements RegistrationProvider {
 
     @Override
     public void register(UserDTO userDTO) {
+        // Stub method implementation for "basic" profile. Basic profile does not use Keycloak DB for registration
     }
 }
